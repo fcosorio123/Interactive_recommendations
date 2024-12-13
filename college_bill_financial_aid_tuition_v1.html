@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>College Bill Module - Spring 2025</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 25px;
+            border-right: 1px solid #34495e;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 10px;
+        }
+        .sidebar p {
+            font-size: 1.3em;
+            margin-top: 15px;
+        }
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 250px;
+            padding: 40px;
+            flex: 1;
+            background-color: #ffffff;
+            overflow-y: auto;
+            position: relative;
+        }
+        /* Section Headers */
+        section h1, section h2, section h3 {
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        /* Form Styling */
+        form {
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        form div {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        form label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        form input[type="number"], form select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        form input[type="number"]:focus, form select:focus {
+            border-color: #2980b9;
+            outline: none;
+            box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+        }
+        input[readonly] {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+            cursor: not-allowed;
+        }
+        /* Button Styling */
+        .btn {
+            padding: 14px 28px;
+            background-color: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 15px;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #1f6391;
+            transform: translateY(-2px);
+        }
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn-secondary {
+            background-color: #27ae60;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #1e8449;
+        }
+        /* Hidden Sections */
+        .hidden {
+            display: none;
+        }
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        table, th, td {
+            border: 1px solid #bdc3c7;
+        }
+        th, td {
+            padding: 18px 20px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #ecf0f1;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        /* Dynamic Field Styling */
+        .dynamic-field {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dynamic-field label {
+            flex: 2;
+            margin-right: 10px;
+        }
+        .dynamic-field input[type="number"] {
+            flex: 3;
+            margin-right: 10px;
+        }
+        .remove-field-btn {
+            flex: 0.5;
+            background-color: #c0392b;
+        }
+        .remove-field-btn:hover:not(:disabled) {
+            background-color: #a93226;
+        }
+        /* Confirmation Modal Styling */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px; /* Could be more or less, depending on screen size */
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-buttons {
+            text-align: right;
+            margin-top: 25px;
+        }
+        .modal-buttons .btn {
+            margin-left: 10px;
+        }
+        /* Current Bill Display */
+        #current-bill-display {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f39c12;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        /* Back Button Styling */
+        #back-button {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background-color: #c0392b;
+        }
+        #back-button:hover:not(:disabled) {
+            background-color: #a93226;
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #2c3e50;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            #back-button {
+                top: 10px;
+                right: 10px;
+                padding: 10px 20px;
+            }
+            form {
+                padding: 20px;
+            }
+            th, td {
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Remaining Balance</h2>
+        <p id="remaining-balance">$0.00</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Back Button -->
+        <button id="back-button" class="btn btn-secondary hidden">Back to Initial Form</button>
+
+        <!-- Initial College Bill Form -->
+        <section id="initial-form">
+            <h1>College Bill Module - Spring 2025</h1>
+            <p>Please enter your College Bill for your Spring 2025. By entering your bill, we'll get a better understanding of your overall expenses, starting with your college related expenses.</strong></p>
+        </br>
+            <form id="college-bill-form">
+                <div>
+                    <label for="college-bill">College Bill Amount ($):</label>
+                    <input type="number" id="college-bill" name="collegeBill" required min="0" placeholder="Enter your College Bill">
+                </div>
+                <div>
+                    <label for="bill-refund">Is this a Bill or Refund?</label>
+                    <select id="bill-refund" name="billRefund" required>
+                        <option value="bill">Bill</option>
+                        <option value="refund">Refund</option>
+                    </select>
+                </div>
+                <div id="calculated-balance-container">
+                    <label for="calculated-balance">Calculated Balance:</label>
+                    <input type="number" id="calculated-balance" name="calculatedBalance" readonly placeholder="Calculated Balance" value="0.00">
+                </div>
+                <!-- Button Containers -->
+                <div id="initial-form-buttons" style="margin-top: 20px;">
+                    <button type="button" id="save-initial-button" class="btn" disabled>Save</button>
+                    <button type="button" id="cancel-initial-button" class="btn btn-secondary" disabled>Cancel</button>
+                </div>
+                <div id="edit-button-container" class="hidden" style="margin-top: 20px;">
+                    <button type="button" id="edit-button" class="btn btn-secondary">Edit</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Manage College Bill Section -->
+        <section id="manage-college-bill" class="hidden">
+            <h1>Manage College Bill - Spring 2025</h1>
+
+            <!-- Current College Bill Display -->
+            <div id="current-bill-display">
+                <span>Current College Bill:</span>
+                <strong id="current-bill-value">$0.00</strong>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin-bottom: 30px;">
+                <button id="enter-bill" class="btn">Enter College Bill</button>
+                <button id="compute-bill" class="btn btn-secondary">Compute College Bill Value</button>
+            </div>
+
+            <!-- Note Below Action Buttons -->
+            <div style="margin-bottom: 30px; font-size: 1em;">
+                <strong>Note:</strong> <strong>"Enter College Bill"</strong> allows you to directly edit your college bill number. However, <strong>"Compute College Bill Value"</strong> allows you to calculate your college bill by incorporating parts of your <strong>"Financial Aid"</strong> package and your <strong>"Tuition"</strong> bill, giving us the opportunity to compute a more accurate number and providing us with more insights into your situation to offer better recommendations.
+            </div>
+
+            <!-- Initial Form Display in Manage Section (Visible from Start) -->
+            <div id="manage-initial-form">
+                <h2>Initial College Bill Details</h2>
+                <form id="manage-initial-bill-form">
+                    <div>
+                        <label for="manage-college-bill-amount">College Bill Amount ($):</label>
+                        <input type="number" id="manage-college-bill-amount" name="manageCollegeBillAmount" readonly>
+                    </div>
+                    <div>
+                        <label for="manage-bill-refund">Type:</label>
+                        <select id="manage-bill-refund" name="manageBillRefund" disabled>
+                            <option value="bill">Bill</option>
+                            <option value="refund">Refund</option>
+                        </select>
+                    </div>
+                    <!-- Save and Cancel Buttons for Manage Initial Form (Hidden Initially) -->
+                    <div id="manage-form-buttons" class="hidden">
+                        <button type="button" id="save-manage-button" class="btn" disabled>Save</button>
+                        <button type="button" id="cancel-manage-button" class="btn btn-secondary" disabled>Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Compute Bill Section (Always Visible, Initially Disabled) -->
+            <div id="compute-section">
+                <h2>Compute College Bill</h2>
+                <form id="compute-form">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Financial Aid</th>
+                                <th>Tuition</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <!-- Add Financial Aid Field Button (Above All Financial Aid Fields) -->
+                                    <div style="margin-bottom: 15px;">
+                                        <button type="button" id="add-financial-aid-field" class="btn btn-secondary" disabled>Add Financial Aid Field</button>
+                                    </div>
+                                    <!-- Primary Financial Aid Fields (Affecting Total Financial Aid) -->
+                                    <div>
+                                        <label for="institutional-scholarships">Institutional Scholarships ($):</label>
+                                        <input type="number" id="institutional-scholarships" name="institutionalScholarships" min="0" value="0" placeholder="Enter Institutional Scholarships" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="other-scholarships">Other Scholarships ($):</label>
+                                        <input type="number" id="other-scholarships" name="otherScholarships" min="0" value="0" placeholder="Enter Other Scholarships" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="pell-grant">Pell Grant ($):</label>
+                                        <input type="number" id="pell-grant" name="pellGrant" min="0" value="0" placeholder="Enter Pell Grant" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="other-grant">Other Grant ($):</label>
+                                        <input type="number" id="other-grant" name="otherGrant" min="0" value="0" placeholder="Enter Other Grant" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="subsidized-loan-accepted">Subsidized Loan (Accepted) ($):</label>
+                                        <input type="number" id="subsidized-loan-accepted" name="subsidizedLoanAccepted" min="0" value="0" placeholder="Enter Subsidized Loan Accepted" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="unsubsidized-loan-accepted">Unsubsidized Loan (Accepted) ($):</label>
+                                        <input type="number" id="unsubsidized-loan-accepted" name="unsubsidizedLoanAccepted" min="0" value="0" placeholder="Enter Unsubsidized Loan Accepted" readonly>
+                                    </div>
+                                    <!-- Total Financial Aid -->
+                                    <div>
+                                        <label for="financial-aid-subtotal">Total Financial Aid ($):</label>
+                                        <input type="number" id="financial-aid-subtotal" name="financialAidSubtotal" readonly placeholder="Calculated Financial Aid" value="0.00">
+                                    </div>
+                                    <!-- Subtitle for Additional Information -->
+                                    <div style="margin-top: 25px;">
+                                        <h3>Other Information Needed</h3>
+                                    </div>
+                                    <!-- Additional Financial Aid Fields (Do Not Affect Total Financial Aid) -->
+                                    <div>
+                                        <label for="sai">SAI ($):</label>
+                                        <input type="number" id="sai" name="sai" min="0" value="0" placeholder="Enter SAI" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="subsidized-loan-offered">Subsidized Loan (Offered) ($):</label>
+                                        <input type="number" id="subsidized-loan-offered" name="subsidizedLoanOffered" min="0" value="0" placeholder="Enter Subsidized Loan Offered" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="unsubsidized-loan-offered">Unsubsidized Loan (Offered) ($):</label>
+                                        <input type="number" id="unsubsidized-loan-offered" name="unsubsidizedLoanOffered" min="0" value="0" placeholder="Enter Unsubsidized Loan Offered" readonly>
+                                    </div>
+                                </td>
+                                <td>
+                                    <!-- Add Tuition Field Button (Above Cost of Tuition) -->
+                                    <div style="margin-bottom: 15px;">
+                                        <button type="button" id="add-tuition-field" class="btn btn-secondary" disabled>Add Tuition Field</button>
+                                    </div>
+                                    <!-- Primary Tuition Fields -->
+                                    <div>
+                                        <label for="tuition">Cost of Tuition ($):</label>
+                                        <input type="number" id="tuition" name="tuition" min="0" value="0" placeholder="Enter Tuition Cost" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="room-board">Room & Board ($):</label>
+                                        <input type="number" id="room-board" name="roomBoard" min="0" value="0" placeholder="Enter Room & Board Cost" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="meal-plan">Meal Plan ($):</label>
+                                        <input type="number" id="meal-plan" name="mealPlan" min="0" value="0" placeholder="Enter Meal Plan Cost" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="housing">Housing ($):</label>
+                                        <input type="number" id="housing" name="housing" min="0" value="0" placeholder="Enter Housing Cost" readonly>
+                                    </div>
+                                    <!-- Total Tuition -->
+                                    <div>
+                                        <label for="tuition-subtotal">Total Tuition ($):</label>
+                                        <input type="number" id="tuition-subtotal" name="tuitionSubtotal" readonly placeholder="Calculated Tuition" value="0.00">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" id="save-compute-button" class="btn" disabled>Save</button>
+                    <button type="button" id="cancel-compute-button" class="btn btn-secondary" disabled>Cancel</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Save</h2>
+            <p>By saving, you will replace your original College Bill with the newly computed value. This action cannot be undone. Do you wish to proceed?</p>
+            <div class="modal-buttons">
+                <button id="confirm-save" class="btn">Confirm</button>
+                <button id="cancel-save" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Elements Selection
+        const initialFormSection = document.getElementById('initial-form');
+        const manageCollegeBillSection = document.getElementById('manage-college-bill');
+        const remainingBalanceElement = document.getElementById('remaining-balance');
+        const currentBillValueElement = document.getElementById('current-bill-value');
+        const backButton = document.getElementById('back-button');
+
+        const editButton = document.getElementById('edit-button'); // Edit Button on Initial Form
+        const enterBillButton = document.getElementById('enter-bill');
+        const computeBillButton = document.getElementById('compute-bill');
+
+        const manageCollegeBillAmount = document.getElementById('manage-college-bill-amount');
+        const manageBillRefund = document.getElementById('manage-bill-refund');
+        const manageFormButtons = document.getElementById('manage-form-buttons'); // Save and Cancel buttons
+        const saveManageFormButton = document.getElementById('save-manage-button');
+        const cancelManageFormButton = document.getElementById('cancel-manage-button');
+
+        const computeSection = document.getElementById('compute-section');
+        const computeForm = document.getElementById('compute-form');
+        const computeSaveButton = document.getElementById('save-compute-button');
+        const computeCancelButton = document.getElementById('cancel-compute-button');
+
+        const addFinancialAidFieldButton = document.getElementById('add-financial-aid-field');
+        const addTuitionFieldButton = document.getElementById('add-tuition-field');
+
+        // Modal Elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmSaveButton = document.getElementById('confirm-save');
+        const cancelSaveButton = document.getElementById('cancel-save');
+
+        // State Variables
+        let remainingBalance = 0;
+        let currentCollegeBill = 0;
+        let isComputeEditing = false; // Tracks whether the compute form is in editing mode
+        let isManageEditing = false; // Tracks whether the manage form is in editing mode
+
+        // Helper Function to Update Remaining Balance Display
+        function updateRemainingBalance() {
+            remainingBalanceElement.textContent = '$' + remainingBalance.toFixed(2);
+        }
+
+        // Helper Function to Update Current College Bill Display
+        function updateCurrentBillDisplay() {
+            currentBillValueElement.textContent = '$' + currentCollegeBill.toFixed(2);
+        }
+
+        // Initial College Bill Form Save Button Functionality
+        const calculatedBalanceInput = document.getElementById('calculated-balance');
+        const collegeBillInput = document.getElementById('college-bill');
+        const billRefundSelect = document.getElementById('bill-refund');
+
+        document.getElementById('save-initial-button').addEventListener('click', function () {
+            const billAmount = parseFloat(collegeBillInput.value);
+            const billType = billRefundSelect.value;
+
+            if (isNaN(billAmount)) {
+                alert('Please enter a valid College Bill Amount.');
+                return;
+            }
+
+            // Calculate Calculated Balance based on Type
+            const calculatedBalance = billType === 'bill' ? -billAmount : billAmount;
+            calculatedBalanceInput.value = calculatedBalance.toFixed(2);
+
+            // Update currentCollegeBill and remainingBalance
+            currentCollegeBill = calculatedBalance;
+            remainingBalance += currentCollegeBill;
+            updateRemainingBalance();
+            updateCurrentBillDisplay();
+
+            // Populate Manage Initial Form with submitted values
+            manageCollegeBillAmount.value = Math.abs(currentCollegeBill).toFixed(2);
+            manageBillRefund.value = billType;
+
+            // Hide Save and Cancel buttons in Initial Form
+            document.getElementById('initial-form-buttons').classList.add('hidden');
+            document.getElementById('save-initial-button').disabled = true;
+            document.getElementById('cancel-initial-button').disabled = true;
+
+            // Show Edit button in Initial Form
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            // Disable Initial Form fields to prevent further editing
+            collegeBillInput.readOnly = true;
+            billRefundSelect.disabled = true;
+
+            alert('College Bill saved successfully! Click "Edit" to manage your College Bill.');
+        });
+
+        // Initial College Bill Form Cancel Button Functionality
+        document.getElementById('cancel-initial-button').addEventListener('click', function () {
+            // Reset initial form fields
+            collegeBillInput.value = '';
+            billRefundSelect.value = 'bill';
+            calculatedBalanceInput.value = '0.00';
+            alert('Initial form has been reset.');
+
+            // Disable Save and Cancel buttons after resetting
+            document.getElementById('save-initial-button').disabled = true;
+            document.getElementById('cancel-initial-button').disabled = true;
+        });
+
+        // Enable Save and Cancel buttons when user starts typing in Initial Form
+        collegeBillInput.addEventListener('input', function () {
+            if (!isManageEditing && !isComputeEditing) {
+                document.getElementById('save-initial-button').disabled = false;
+                document.getElementById('cancel-initial-button').disabled = false;
+            }
+        });
+
+        billRefundSelect.addEventListener('change', function () {
+            if (!isManageEditing && !isComputeEditing) {
+                document.getElementById('save-initial-button').disabled = false;
+                document.getElementById('cancel-initial-button').disabled = false;
+            }
+        });
+
+        // Edit Button Functionality on Initial Form
+        editButton.addEventListener('click', function () {
+            // Navigate to Manage College Bill Section
+            initialFormSection.classList.add('hidden');
+            manageCollegeBillSection.classList.remove('hidden');
+            backButton.classList.remove('hidden');
+
+            // Ensure forms are disabled
+            manageCollegeBillAmount.readOnly = true;
+            manageBillRefund.disabled = true;
+
+            // Hide Save and Cancel buttons in Manage Initial Form
+            manageFormButtons.classList.add('hidden');
+            saveManageFormButton.disabled = true;
+            cancelManageFormButton.disabled = true;
+
+            // Update Manage Initial Form fields to reflect currentCollegeBill
+            manageCollegeBillAmount.value = Math.abs(currentCollegeBill).toFixed(2);
+            manageBillRefund.value = (currentCollegeBill < 0) ? 'bill' : 'refund';
+
+            // Update Current Bill Display
+            updateCurrentBillDisplay();
+
+            // Reset editing states
+            isManageEditing = false;
+            isComputeEditing = false;
+
+            // Hide "Edit" Button Container in Initial Form
+            document.getElementById('edit-button-container').classList.add('hidden');
+
+            alert('Returned to Manage College Bill panel. Forms are disabled. Click "Enter Bill" or "Compute College Bill Value" to make changes.');
+        });
+
+        // Back Button Functionality
+        backButton.addEventListener('click', function () {
+            // Navigate back to Initial Form
+            manageCollegeBillSection.classList.add('hidden');
+            initialFormSection.classList.remove('hidden');
+            backButton.classList.add('hidden');
+
+            // Disable Manage Initial Form fields
+            manageCollegeBillAmount.readOnly = true;
+            manageBillRefund.disabled = true;
+
+            // Hide Save and Cancel buttons in Manage Initial Form
+            manageFormButtons.classList.add('hidden');
+            saveManageFormButton.disabled = true;
+            cancelManageFormButton.disabled = true;
+
+            // Re-enable action buttons
+            enterBillButton.disabled = false;
+            computeBillButton.disabled = false;
+
+            // Show "Edit" Button Container in Initial Form
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            // Hide Save and Cancel buttons in Initial Form
+            document.getElementById('initial-form-buttons').classList.add('hidden');
+
+            // Reflect Remaining Balance in the Initial Form's College Bill Amount
+            collegeBillInput.value = (currentCollegeBill).toFixed(2);
+            billRefundSelect.value = (currentCollegeBill < 0) ? 'bill' : 'refund';
+            calculatedBalanceInput.value = currentCollegeBill.toFixed(2);
+
+            // Set the initial form fields to readonly and grayed out
+            collegeBillInput.readOnly = true;
+            billRefundSelect.disabled = true;
+
+            alert('Returned to the Initial Form. The College Bill Amount field is now disabled and reflects the remaining balance. Click "Edit" to modify.');
+        });
+
+        // Enter College Bill Button Functionality in Manage Section
+        enterBillButton.addEventListener('click', function () {
+            if (isManageEditing) {
+                alert('Already in editing mode.');
+                return;
+            }
+
+            // Enable the manage initial form fields
+            manageCollegeBillAmount.readOnly = false;
+            manageBillRefund.disabled = false;
+            isManageEditing = true;
+            enterBillButton.textContent = 'Editing...';
+
+            // Show Save and Cancel buttons
+            manageFormButtons.classList.remove('hidden');
+            saveManageFormButton.disabled = false;
+            cancelManageFormButton.disabled = false;
+
+            // Disable Compute Button to maintain mutual exclusivity
+            computeBillButton.disabled = true;
+        });
+
+        // Compute College Bill Button Functionality
+        computeBillButton.addEventListener('click', function () {
+            if (isComputeEditing) {
+                alert('Please save or cancel your current compute edits before editing again.');
+                return;
+            }
+
+            // Enable Compute Form for Editing
+            enableComputeForm();
+
+            // Disable Enter Bill Button to maintain mutual exclusivity
+            enterBillButton.disabled = true;
+        });
+
+        // Save Button for Manage Initial Form
+        saveManageFormButton.addEventListener('click', function () {
+            const newAmount = parseFloat(manageCollegeBillAmount.value);
+            const newType = manageBillRefund.value;
+
+            if (isNaN(newAmount)) {
+                alert('Please enter a valid College Bill Amount.');
+                return;
+            }
+
+            // Update currentCollegeBill and remainingBalance
+            remainingBalance -= currentCollegeBill; // Remove old bill
+            if (newType === 'bill') {
+                currentCollegeBill = -newAmount;
+            } else {
+                currentCollegeBill = newAmount;
+            }
+            remainingBalance += currentCollegeBill; // Add new bill
+            updateRemainingBalance();
+            updateCurrentBillDisplay();
+
+            // Update manage initial form fields
+            manageCollegeBillAmount.value = Math.abs(currentCollegeBill).toFixed(2);
+            manageBillRefund.value = (currentCollegeBill < 0) ? 'bill' : 'refund';
+
+            // Disable the form fields
+            manageCollegeBillAmount.readOnly = true;
+            manageBillRefund.disabled = true;
+            isManageEditing = false;
+            enterBillButton.textContent = 'Enter College Bill';
+
+            // Hide Save and Cancel buttons
+            manageFormButtons.classList.add('hidden');
+            saveManageFormButton.disabled = true;
+            cancelManageFormButton.disabled = true;
+
+            // Re-enable Compute Button
+            computeBillButton.disabled = false;
+
+            // Show "Edit" Button after saving
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            alert('College Bill updated successfully!');
+        });
+
+        // Cancel Button for Manage Initial Form
+        cancelManageFormButton.addEventListener('click', function () {
+            // Revert form fields to last saved values
+            manageCollegeBillAmount.value = Math.abs(currentCollegeBill).toFixed(2);
+            manageBillRefund.value = (currentCollegeBill < 0) ? 'bill' : 'refund';
+
+            // Disable the form fields
+            manageCollegeBillAmount.readOnly = true;
+            manageBillRefund.disabled = true;
+            isManageEditing = false;
+            enterBillButton.textContent = 'Enter College Bill';
+
+            // Hide Save and Cancel buttons
+            manageFormButtons.classList.add('hidden');
+            saveManageFormButton.disabled = true;
+            cancelManageFormButton.disabled = true;
+
+            // Re-enable Compute Button
+            computeBillButton.disabled = false;
+
+            // Show "Edit" Button after canceling
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            alert('Manage form editing canceled.');
+        });
+
+        // Compute Form Save Button Functionality
+        computeSaveButton.addEventListener('click', function () {
+            if (!isComputeEditing) {
+                alert('Please enable the Compute form for editing.');
+                return;
+            }
+
+            // Calculate Subtotals before proceeding
+            calculateSubtotals();
+
+            // Show Modal for Confirmation
+            confirmationModal.style.display = 'block';
+        });
+
+        // Confirm Save in Modal
+        confirmSaveButton.addEventListener('click', function () {
+            // Retrieve Subtotals
+            const totalFinancialAid = parseFloat(document.getElementById('financial-aid-subtotal').value) || 0;
+            const totalTuition = parseFloat(document.getElementById('tuition-subtotal').value) || 0;
+
+            // Compute New College Bill
+            const computedBill = totalFinancialAid - totalTuition;
+
+            // Validate Computed Bill
+            if (isNaN(computedBill)) {
+                alert('Error computing the College Bill. Please check your inputs.');
+                confirmationModal.style.display = 'none';
+                return;
+            }
+
+            // Update Remaining Balance: Remove old bill and add computed bill
+            remainingBalance = remainingBalance - currentCollegeBill + computedBill;
+            currentCollegeBill = computedBill;
+            updateRemainingBalance();
+            updateCurrentBillDisplay();
+
+            // Update manage initial form fields
+            manageCollegeBillAmount.value = Math.abs(currentCollegeBill).toFixed(2);
+            manageBillRefund.value = (currentCollegeBill < 0) ? 'bill' : 'refund';
+
+            // Disable the compute form fields
+            disableComputeForm();
+
+            // Re-enable Enter Bill Button
+            enterBillButton.disabled = false;
+
+            // Hide Modal
+            confirmationModal.style.display = 'none';
+
+            // Show "Edit" Button after computing
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            alert('College Bill computed and updated successfully!');
+        });
+
+        // Cancel Save in Modal
+        cancelSaveButton.addEventListener('click', function () {
+            // Hide Modal
+            confirmationModal.style.display = 'none';
+        });
+
+        // Compute Form Cancel Button Functionality
+        computeCancelButton.addEventListener('click', function () {
+            if (!isComputeEditing) {
+                // If not in editing mode, do nothing
+                return;
+            }
+
+            // Reset compute form fields to last saved values
+            calculateSubtotals(); // Recalculate based on current input values
+            disableComputeForm();
+
+            // Re-enable Enter Bill Button
+            enterBillButton.disabled = false;
+
+            // Show "Edit" Button after canceling
+            document.getElementById('edit-button-container').classList.remove('hidden');
+
+            alert('Compute operation canceled. Changes have been discarded.');
+        });
+
+        // Enable Compute Form for Editing
+        function enableComputeForm() {
+            const computeInputs = computeForm.querySelectorAll('input[type="number"], select');
+            computeInputs.forEach(input => {
+                if (!['financial-aid-subtotal', 'tuition-subtotal'].includes(input.id)) {
+                    input.readOnly = false;
+                    input.disabled = false;
+                }
+            });
+            isComputeEditing = true;
+            computeSaveButton.disabled = false; // Enable Save button immediately
+            computeCancelButton.disabled = false;
+            computeBillButton.textContent = 'Editing...';
+
+            // Enable "Add" buttons
+            addFinancialAidFieldButton.disabled = false;
+            addTuitionFieldButton.disabled = false;
+        }
+
+        // Disable Compute Form after Saving or Canceling
+        function disableComputeForm() {
+            const computeInputs = computeForm.querySelectorAll('input[type="number"], select');
+            computeInputs.forEach(input => {
+                if (!['financial-aid-subtotal', 'tuition-subtotal'].includes(input.id)) {
+                    input.readOnly = true;
+                    input.disabled = true;
+                }
+            });
+            isComputeEditing = false;
+            computeSaveButton.disabled = true;
+            computeCancelButton.disabled = true;
+            computeBillButton.textContent = 'Compute College Bill Value';
+
+            // Disable "Add" buttons
+            addFinancialAidFieldButton.disabled = true;
+            addTuitionFieldButton.disabled = true;
+        }
+
+        // Calculate Subtotals in Compute Form
+        function calculateSubtotals() {
+            // Calculate Total Financial Aid based on primary fields
+            const institutionalScholarships = parseFloat(document.getElementById('institutional-scholarships').value) || 0;
+            const otherScholarships = parseFloat(document.getElementById('other-scholarships').value) || 0;
+            const pellGrant = parseFloat(document.getElementById('pell-grant').value) || 0;
+            const otherGrant = parseFloat(document.getElementById('other-grant').value) || 0;
+            const subsidizedLoanAccepted = parseFloat(document.getElementById('subsidized-loan-accepted').value) || 0;
+            const unsubsidizedLoanAccepted = parseFloat(document.getElementById('unsubsidized-loan-accepted').value) || 0;
+
+            // Sum all primary financial aid fields
+            let totalFinancialAid = institutionalScholarships + otherScholarships + pellGrant + otherGrant + subsidizedLoanAccepted + unsubsidizedLoanAccepted;
+
+            // Include dynamically added financial aid fields
+            const dynamicFinancialAidFields = document.querySelectorAll('.financial-aid-dynamic input[type="number"]');
+            dynamicFinancialAidFields.forEach(field => {
+                const value = parseFloat(field.value) || 0;
+                totalFinancialAid += value;
+            });
+
+            document.getElementById('financial-aid-subtotal').value = totalFinancialAid.toFixed(2);
+
+            // Calculate Total Tuition
+            const tuition = parseFloat(document.getElementById('tuition').value) || 0;
+            const roomBoard = parseFloat(document.getElementById('room-board').value) || 0;
+            const mealPlan = parseFloat(document.getElementById('meal-plan').value) || 0;
+            const housing = parseFloat(document.getElementById('housing').value) || 0;
+
+            // Sum all primary tuition fields
+            let totalTuition = tuition + roomBoard + mealPlan + housing;
+
+            // Include dynamically added tuition fields
+            const dynamicTuitionFields = document.querySelectorAll('.tuition-dynamic input[type="number"]');
+            dynamicTuitionFields.forEach(field => {
+                const value = parseFloat(field.value) || 0;
+                totalTuition += value;
+            });
+
+            document.getElementById('tuition-subtotal').value = totalTuition.toFixed(2);
+        }
+
+        // Add Financial Aid Field Functionality
+        addFinancialAidFieldButton.addEventListener('click', function () {
+            const financialAidContainer = document.querySelector('#compute-section table tbody tr td:first-child');
+            const institutionalScholarshipsDiv = financialAidContainer.querySelector('#institutional-scholarships').parentNode; // "Institutional Scholarships" div
+            const dynamicAidDiv = document.createElement('div');
+            dynamicAidDiv.classList.add('dynamic-field', 'financial-aid-dynamic');
+
+            // Create Label
+            const label = document.createElement('label');
+            label.textContent = 'Additional Financial Aid ($):';
+            label.style.flex = '2';
+
+            // Create Input
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.placeholder = 'Enter Additional Financial Aid';
+            input.value = '0';
+            input.name = 'additionalFinancialAid[]';
+            input.style.flex = '3';
+
+            // Attach input event listener for recalculating subtotals
+            input.addEventListener('input', calculateSubtotals);
+
+            // Create Remove Button
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.textContent = 'Remove';
+            removeButton.classList.add('btn', 'remove-field-btn');
+            removeButton.style.flex = '0.5';
+
+            // Append elements
+            dynamicAidDiv.appendChild(label);
+            dynamicAidDiv.appendChild(input);
+            dynamicAidDiv.appendChild(removeButton);
+
+            // Insert the new field above "Institutional Scholarships" div
+            financialAidContainer.insertBefore(dynamicAidDiv, institutionalScholarshipsDiv);
+
+            // Enable Save and Cancel buttons
+            computeSaveButton.disabled = false;
+            computeCancelButton.disabled = false;
+
+            // Add event listener to Remove button
+            removeButton.addEventListener('click', function () {
+                financialAidContainer.removeChild(dynamicAidDiv);
+                calculateSubtotals();
+            });
+        });
+
+        // Add Tuition Field Functionality
+        addTuitionFieldButton.addEventListener('click', function () {
+            const tuitionContainer = document.querySelector('#compute-section table tbody tr td:nth-child(2)');
+            const costOfTuitionDiv = tuitionContainer.querySelector('#tuition').parentNode; // "Cost of Tuition" div
+            const dynamicTuitionDiv = document.createElement('div');
+            dynamicTuitionDiv.classList.add('dynamic-field', 'tuition-dynamic');
+
+            // Create Label
+            const label = document.createElement('label');
+            label.textContent = 'Additional Tuition ($):';
+            label.style.flex = '2';
+
+            // Create Input
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.placeholder = 'Enter Additional Tuition';
+            input.value = '0';
+            input.name = 'additionalTuition[]';
+            input.style.flex = '3';
+
+            // Attach input event listener for recalculating subtotals
+            input.addEventListener('input', calculateSubtotals);
+
+            // Create Remove Button
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.textContent = 'Remove';
+            removeButton.classList.add('btn', 'remove-field-btn');
+            removeButton.style.flex = '0.5';
+
+            // Append elements
+            dynamicTuitionDiv.appendChild(label);
+            dynamicTuitionDiv.appendChild(input);
+            dynamicTuitionDiv.appendChild(removeButton);
+
+            // Insert the new field above "Cost of Tuition" div
+            tuitionContainer.insertBefore(dynamicTuitionDiv, costOfTuitionDiv);
+
+            // Enable Save and Cancel buttons
+            computeSaveButton.disabled = false;
+            computeCancelButton.disabled = false;
+
+            // Add event listener to Remove button
+            removeButton.addEventListener('click', function () {
+                tuitionContainer.removeChild(dynamicTuitionDiv);
+                calculateSubtotals();
+            });
+        });
+
+        // Close Modal when clicking outside of the modal content
+        window.addEventListener('click', function(event) {
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
+            }
+        });
+
+        // Initially disable Save and Cancel buttons in Manage Initial Form
+        saveManageFormButton.disabled = true;
+        cancelManageFormButton.disabled = true;
+
+        // Manage Form Button Functionality
+        // Enable Save and Cancel buttons when user starts editing
+        manageCollegeBillAmount.addEventListener('input', function () {
+            if (isManageEditing) {
+                saveManageFormButton.disabled = false;
+                cancelManageFormButton.disabled = false;
+            }
+        });
+
+        manageBillRefund.addEventListener('change', function () {
+            if (isManageEditing) {
+                saveManageFormButton.disabled = false;
+                cancelManageFormButton.disabled = false;
+            }
+        });
+
+        // Attach input event listeners to compute form fields for real-time subtotal calculation
+        const computeFormFields = computeForm.querySelectorAll('input[type="number"], select');
+        computeFormFields.forEach(field => {
+            if (!['financial-aid-subtotal', 'tuition-subtotal'].includes(field.id)) {
+                field.addEventListener('input', calculateSubtotals);
+            }
+        });
+    </script>
+
+</body>
+</html>
+
