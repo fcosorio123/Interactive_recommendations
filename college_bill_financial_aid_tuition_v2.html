@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>College Bill Module</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            line-height: 1.6em;
+        }
+
+        /* Top Yellow Banner */
+        .top-banner {
+            position: fixed;
+            top: 0;
+            left: 280px; /* Sidebar width */
+            width: calc(100% - 280px);
+            background-color: #f1c40f;
+            color: #333;
+            padding: 20px 25px;
+            font-size: 1.2em;
+            font-weight: 600;
+            z-index: 999;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6377 100%);
+            color: #ecf0f1;
+            padding: 30px 20px;
+            border-right: 1px solid #34495e;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .sidebar h3 {
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .sidebar p {
+            font-size: 1.3em;
+            margin-top: 10px;
+        }
+
+        /* Graphic Reminder in Sidebar */
+        .formula-reminder {
+            margin-top: 40px;
+            background-color: #f1c40f;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .formula-reminder p {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 100px 50px 50px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #f0f2f5;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2em; /* Larger title */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 700; /* Make questions bold */
+            font-size: 1.05em;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ccd1d7;
+            border-radius: 6px;
+            font-size: 1em;
+            background-color: #fff;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: #2980b9;
+            outline: none;
+            box-shadow: 0 0 3px rgba(41,128,185,0.3);
+        }
+
+        input[readonly] {
+            background-color: #eef1f4;
+            color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background-color: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #1f6391;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #27ae60;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #1e8449;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        table, th, td {
+            border: 1px solid #bdc3c7;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            vertical-align: top;
+            font-size: 0.95em;
+        }
+
+        th {
+            background-color: #ecf0f1;
+        }
+
+        .note {
+            font-size: 0.95em;
+            color: #7f8c8d;
+            margin: 5px 0 20px;
+            line-height: 1.4em;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .panel {
+            border: 2px solid #ccd1d7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #fff;
+        }
+
+        .panel h2 {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .dynamic-field {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .dynamic-field label {
+            flex: 2;
+            margin-bottom: 0;
+        }
+
+        .dynamic-field input[type="number"] {
+            flex: 3;
+            margin-right: 10px;
+        }
+
+        .remove-field-btn {
+            flex: 0.5;
+            background-color: #c0392b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .remove-field-btn:hover:not(:disabled) {
+            background-color: #a93226;
+        }
+
+        #bill-only-panel, #bill-aid-tuition-panel {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Remaining Balances</h2>
+        <h3>Spring 2025</h3>
+        <p id="remaining-balance-spring2025">$0.00</p>
+        <h3>Fall 2025</h3>
+        <p id="remaining-balance-fall2025">$0.00</p>
+
+        <!-- Formula reminder block -->
+        <div class="formula-reminder">
+            <p>College Bill = Financial Aid - Tuition Bill</p>
+        </div>
+    </div>
+
+    <div class="top-banner" id="top-banner">
+        Current College Bill: $0.00
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <h1>Enter & Manage Your College Bill</h1>
+
+            <!-- Semester Selection -->
+            <label><strong>Which semester are you planning for?</strong></label>
+            <select id="semester-select">
+                <option value="">--Select Semester--</option>
+                <option value="spring2025">Spring 2025</option>
+                <option value="fall2025">Fall 2025</option>
+            </select>
+            <p class="note"><strong>Note:</strong> Please select the semester for which you are planning to manage your college bill.</p>
+
+            <!-- Common Planning Section -->
+            <div id="spring-planning" class="hidden">
+                <br>
+                <label><strong>Have you received your college bill from your school?</strong></label>
+                <select id="have-bill-select">
+                    <option value="">--Select--</option>
+                    <option value="yes">Yes, I have my bill</option>
+                    <option value="no">No, I don't have it yet</option>
+                </select>
+                <p class="note"><strong>Note:</strong> Your college bill can be accessed through your school portal. It includes your financial aid, tuition costs, and any out-of-pocket expenses. It may result in either a payment you owe or a refund you will receive.</p>
+            </div>
+
+            <!-- Enter or Compute -->
+            <div id="enter-or-compute" class="hidden">
+                <br>
+                <label><strong>Do you want to just enter the bill or compute it?</strong></label>
+                <select id="enter-or-compute-select">
+                    <option value="">--Select--</option>
+                    <option value="enter">Just enter the bill</option>
+                    <option value="compute">Compute it</option>
+                </select>
+                <p class="note">
+                    <strong>Note:</strong> If you wish to <strong>just enter the bill</strong>, enter the total amount of your college bill or refund.
+                    If you'd like to <strong>compute it</strong>, input details about your financial aid and tuition. We'll calculate your college bill.
+                    The more info you provide, the better our recommendations will be.
+                </p>
+            </div>
+
+            <!-- Panel for Enter Bill Scenario -->
+            <div class="panel" id="bill-only-panel" style="display:none;">
+                <h2>College Bill Amount ($)</h2>
+                <div id="enter-bill-fields" class="hidden">
+                    <br>
+                    <label><strong>College Bill Amount ($):</strong></label>
+                    <input type="number" id="college-bill" name="collegeBill" min="0" placeholder="Enter your College Bill">
+
+                    <label><strong>Is this a Bill or Refund?</strong></label>
+                    <select id="bill-refund" name="billRefund">
+                        <option value="bill">Bill (You owe money)</option>
+                        <option value="refund">Refund (You receive money)</option>
+                    </select>
+
+                    <label><strong>Calculated Balance:</strong></label>
+                    <input type="number" id="calculated-balance" name="calculatedBalance" readonly placeholder="">
+
+                    <div>
+                        <button type="button" id="save-initial-button" class="btn" disabled>Save</button>
+                        <!-- Cancel always enabled once displayed -->
+                        <button type="button" id="cancel-initial-button" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel for Compute Scenario -->
+            <div class="panel" id="bill-aid-tuition-panel" style="display:none;">
+                <h2>College Bill Amount ($), Financial Aid & Tuition Bill</h2>
+                <div id="compute-bill-fields" class="hidden">
+                    <br> 
+                    <label><strong>Fill out details to compute your college bill:</strong></label>
+                    <p class="note"><strong>Note:</strong> Enter your financial aid and tuition details below. We'll compute your net bill/refund amount.</p>
+
+                    <form id="compute-form">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Financial Aid</th>
+                                    <th>Tuition & Fees</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="financial-aid-container">
+                                        <button type="button" id="add-financial-aid-field" class="btn btn-secondary" disabled style="margin-bottom:15px;">Add Financial Aid Field</button>
+                                        <!-- Reference node for financial aid fields -->
+                                        <div id="financial-aid-reference"></div>
+
+                                        <label><strong>Institutional Scholarships ($):</strong></label>
+                                        <input type="number" id="institutional-scholarships" min="0" placeholder="" readonly>
+
+                                        <label><strong>Other Scholarships ($):</strong></label>
+                                        <input type="number" id="other-scholarships" min="0" placeholder="" readonly>
+
+                                        <label><strong>Pell Grant ($):</strong></label>
+                                        <input type="number" id="pell-grant" min="0" placeholder="" readonly>
+
+                                        <label><strong>Other Grant ($):</strong></label>
+                                        <input type="number" id="other-grant" min="0" placeholder="" readonly>
+
+                                        <label><strong>Subsidized Loan (Accepted) ($):</strong></label>
+                                        <input type="number" id="subsidized-loan-accepted" min="0" placeholder="" readonly>
+
+                                        <label><strong>Unsubsidized Loan (Accepted) ($):</strong></label>
+                                        <input type="number" id="unsubsidized-loan-accepted" min="0" placeholder="" readonly>
+
+                                        <label style="margin-top:20px;"><strong>Total Financial Aid ($):</strong></label>
+                                        <input type="number" id="financial-aid-subtotal" readonly placeholder="">
+
+                                        <h3>Additional Info</h3>
+                                        <label><strong>SAI ($):</strong></label>
+                                        <input type="number" id="sai" min="0" placeholder="" readonly>
+
+                                        <label><strong>Subsidized Loan (Offered) ($):</strong></label>
+                                        <input type="number" id="subsidized-loan-offered" min="0" placeholder="" readonly>
+
+                                        <label><strong>Unsubsidized Loan (Offered) ($):</strong></label>
+                                        <input type="number" id="unsubsidized-loan-offered" min="0" placeholder="" readonly>
+                                    </td>
+                                    <td id="tuition-container">
+                                        <button type="button" id="add-tuition-field" class="btn btn-secondary" disabled style="margin-bottom:15px;">Add Tuition Field</button>
+                                        <!-- Reference node for tuition fields -->
+                                        <div id="tuition-reference"></div>
+
+                                        <label><strong>Tuition ($):</strong></label>
+                                        <input type="number" id="tuition" min="0" placeholder="" readonly>
+
+                                        <label><strong>Room & Board ($):</strong></label>
+                                        <input type="number" id="room-board" min="0" placeholder="" readonly>
+
+                                        <label><strong>Meal Plan ($):</strong></label>
+                                        <input type="number" id="meal-plan" min="0" placeholder="" readonly>
+
+                                        <label><strong>Housing ($):</strong></label>
+                                        <input type="number" id="housing" min="0" placeholder="" readonly>
+
+                                        <label style="margin-top:20px;"><strong>Total Tuition ($):</strong></label>
+                                        <input type="number" id="tuition-subtotal" readonly placeholder="">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                            <button type="button" id="save-compute-button" class="btn" disabled>Save</button>
+                            <button type="button" id="cancel-compute-button" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let spring2025Balance = 0;
+        let fall2025Balance = 0;
+        let currentCollegeBill = 0;
+        let currentSemester = '';
+        const remainingBalanceSpring2025 = document.getElementById('remaining-balance-spring2025');
+        const remainingBalanceFall2025 = document.getElementById('remaining-balance-fall2025');
+        const topBanner = document.getElementById('top-banner');
+
+        const semesterSelect = document.getElementById('semester-select');
+        const springPlanningDiv = document.getElementById('spring-planning');
+        const haveBillSelect = document.getElementById('have-bill-select');
+        const enterOrComputeDiv = document.getElementById('enter-or-compute');
+        const enterOrComputeSelect = document.getElementById('enter-or-compute-select');
+
+        const billOnlyPanel = document.getElementById('bill-only-panel');
+        const billAidTuitionPanel = document.getElementById('bill-aid-tuition-panel');
+
+        const enterBillFields = document.getElementById('enter-bill-fields');
+        const computeBillFields = document.getElementById('compute-bill-fields');
+
+        const saveInitialButton = document.getElementById('save-initial-button');
+        const cancelInitialButton = document.getElementById('cancel-initial-button');
+        const collegeBillInput = document.getElementById('college-bill');
+        const billRefundSelect = document.getElementById('bill-refund');
+        const calculatedBalanceInput = document.getElementById('calculated-balance');
+
+        const computeForm = document.getElementById('compute-form');
+        const saveComputeButton = document.getElementById('save-compute-button');
+        const cancelComputeButton = document.getElementById('cancel-compute-button');
+        const addFinancialAidFieldButton = document.getElementById('add-financial-aid-field');
+        const addTuitionFieldButton = document.getElementById('add-tuition-field');
+
+        const financialAidRef = document.getElementById('financial-aid-reference');
+        const tuitionRef = document.getElementById('tuition-reference');
+
+        const financialAidFields = [
+            'institutional-scholarships',
+            'other-scholarships',
+            'pell-grant',
+            'other-grant',
+            'subsidized-loan-accepted',
+            'unsubsidized-loan-accepted'
+        ];
+
+        const tuitionFields = [
+            'tuition',
+            'room-board',
+            'meal-plan',
+            'housing'
+        ];
+
+        function updateRemainingBalanceDisplay() {
+            remainingBalanceSpring2025.textContent = '$' + spring2025Balance.toFixed(2);
+            remainingBalanceFall2025.textContent = '$' + fall2025Balance.toFixed(2);
+
+            let displayBill = 0;
+            if (currentSemester === 'spring2025') {
+                displayBill = spring2025Balance;
+            } else if (currentSemester === 'fall2025') {
+                displayBill = fall2025Balance;
+            }
+            topBanner.textContent = 'Current College Bill: ' + (displayBill >= 0 ? '$' + displayBill.toFixed(2) : '-$' + Math.abs(displayBill).toFixed(2));
+        }
+
+        semesterSelect.addEventListener('change', () => {
+            const semester = semesterSelect.value;
+            currentSemester = semester;
+            resetAll();
+            if (semester === 'spring2025' || semester === 'fall2025') {
+                springPlanningDiv.classList.remove('hidden');
+            }
+        });
+
+        haveBillSelect.addEventListener('change', () => {
+            resetEnterOrCompute();
+            const haveBill = haveBillSelect.value;
+            if (haveBill === 'yes') {
+                enterOrComputeDiv.classList.remove('hidden');
+            } else if (haveBill === 'no') {
+                // Skip "Do you want to enter or compute?" and directly show Bill panel
+                enterOrComputeDiv.classList.add('hidden');
+                billOnlyPanel.style.display = 'block';
+                enterBillFields.classList.remove('hidden');
+                // Cancel always enabled here
+                cancelInitialButton.disabled = false;
+                resetBillFields(false);
+            }
+        });
+
+        enterOrComputeSelect.addEventListener('change', () => {
+            const choice = enterOrComputeSelect.value;
+            hideAllPanels();
+
+            if (choice === 'enter') {
+                billOnlyPanel.style.display = 'block';
+                enterBillFields.classList.remove('hidden');
+                cancelInitialButton.disabled = false; 
+                resetBillFields(false);
+            } else if (choice === 'compute') {
+                billAidTuitionPanel.style.display = 'block';
+                computeBillFields.classList.remove('hidden');
+                resetComputeFields(false);
+                enableComputeForm();
+                cancelComputeButton.disabled = false;
+            }
+        });
+
+        collegeBillInput.addEventListener('input', checkEnterBillForm);
+        billRefundSelect.addEventListener('change', checkEnterBillForm);
+
+        function checkEnterBillForm() {
+            // save disabled if empty, but cancel always enabled
+            if (collegeBillInput.value !== '') {
+                saveInitialButton.disabled = false;
+            } else {
+                saveInitialButton.disabled = true;
+            }
+            cancelInitialButton.disabled = false;
+        }
+
+        function updateBalanceForSemester(calculatedBalance) {
+            if (currentSemester === 'spring2025') {
+                spring2025Balance = calculatedBalance;
+            } else if (currentSemester === 'fall2025') {
+                fall2025Balance = calculatedBalance;
+            }
+            updateRemainingBalanceDisplay();
+        }
+
+        saveInitialButton.addEventListener('click', () => {
+            const billAmount = parseFloat(collegeBillInput.value) || 0;
+            const billType = billRefundSelect.value;
+            const calculatedBalance = (billType === 'bill') ? -billAmount : billAmount;
+            calculatedBalanceInput.value = calculatedBalance.toFixed(2);
+
+            currentCollegeBill = calculatedBalance;
+            updateBalanceForSemester(currentCollegeBill);
+
+            alert('College Bill saved successfully!');
+            // Keep fields read-only
+            collegeBillInput.readOnly = true;
+            billRefundSelect.disabled = true;
+            saveInitialButton.disabled = true;
+            // Cancel still enabled
+        });
+
+        cancelInitialButton.addEventListener('click', () => {
+            // Cancel resets the scenario fully
+            resetBillFields(true);
+            enterOrComputeSelect.value = '';
+        });
+
+        function enableComputeForm() {
+            [...computeForm.querySelectorAll('input[type="number"]')].forEach(input => {
+                if (input.id !== 'financial-aid-subtotal' && input.id !== 'tuition-subtotal') {
+                    input.readOnly = false;
+                }
+            });
+            addFinancialAidFieldButton.disabled = false;
+            addTuitionFieldButton.disabled = false;
+            saveComputeButton.disabled = false;
+            cancelComputeButton.disabled = false;
+
+            financialAidFields.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateSubtotals);
+            });
+            tuitionFields.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateSubtotals);
+            });
+        }
+
+        function calculateSubtotals() {
+            let totalFinancialAid = 0;
+            financialAidFields.forEach(id => {
+                const val = parseFloat(document.getElementById(id).value) || 0;
+                totalFinancialAid += val;
+            });
+
+            // Include dynamic financial aid fields
+            document.querySelectorAll('.financial-aid-dynamic input[type="number"]').forEach(field => {
+                const val = parseFloat(field.value) || 0;
+                totalFinancialAid += val;
+            });
+
+            document.getElementById('financial-aid-subtotal').value = totalFinancialAid.toFixed(2);
+
+            let totalTuition = 0;
+            tuitionFields.forEach(id => {
+                const val = parseFloat(document.getElementById(id).value) || 0;
+                totalTuition += val;
+            });
+
+            // Include dynamic tuition fields
+            document.querySelectorAll('.tuition-dynamic input[type="number"]').forEach(field => {
+                const val = parseFloat(field.value) || 0;
+                totalTuition += val;
+            });
+
+            document.getElementById('tuition-subtotal').value = totalTuition.toFixed(2);
+        }
+
+        saveComputeButton.addEventListener('click', () => {
+            calculateSubtotals();
+            const totalFinancialAid = parseFloat(document.getElementById('financial-aid-subtotal').value) || 0;
+            const totalTuition = parseFloat(document.getElementById('tuition-subtotal').value) || 0;
+            const computedBill = totalFinancialAid - totalTuition;
+
+            currentCollegeBill = computedBill;
+            updateBalanceForSemester(currentCollegeBill);
+
+            const message = computedBill >= 0
+                ? 'Computed College Bill saved successfully! You will receive a refund of $' + computedBill.toFixed(2)
+                : 'Computed College Bill saved successfully! You owe $' + Math.abs(computedBill).toFixed(2);
+
+            alert(message);
+
+            // Keep fields read-only
+            [...computeForm.querySelectorAll('input[type="number"]')].forEach(input => {
+                if (input.id !== 'financial-aid-subtotal' && input.id !== 'tuition-subtotal') {
+                    input.readOnly = true;
+                }
+            });
+            addFinancialAidFieldButton.disabled = true;
+            addTuitionFieldButton.disabled = true;
+            saveComputeButton.disabled = true;
+            cancelComputeButton.disabled = false;
+        });
+
+        cancelComputeButton.addEventListener('click', () => {
+            // Cancel resets the scenario
+            resetComputeFields(true);
+            enterOrComputeSelect.value = '';
+        });
+
+        addFinancialAidFieldButton.addEventListener('click', function () {
+            const financialAidContainer = document.getElementById('financial-aid-container');
+
+            const dynamicDiv = document.createElement('div');
+            dynamicDiv.classList.add('dynamic-field', 'financial-aid-dynamic');
+
+            const label = document.createElement('label');
+            label.innerHTML = '<strong>Additional Financial Aid ($):</strong>';
+            label.style.flex = '2';
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.placeholder = '';
+            input.style.flex = '3';
+            input.addEventListener('input', calculateSubtotals);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.classList.add('remove-field-btn');
+            removeBtn.textContent = 'Remove';
+
+            removeBtn.addEventListener('click', () => {
+                financialAidContainer.removeChild(dynamicDiv);
+                calculateSubtotals();
+            });
+
+            dynamicDiv.appendChild(label);
+            dynamicDiv.appendChild(input);
+            dynamicDiv.appendChild(removeBtn);
+
+            // Insert dynamic field ABOVE Institutional Scholarships:
+            financialAidContainer.insertBefore(dynamicDiv, document.getElementById('financial-aid-reference').nextSibling);
+        });
+
+        addTuitionFieldButton.addEventListener('click', function () {
+            const tuitionContainer = document.getElementById('tuition-container');
+
+            const dynamicDiv = document.createElement('div');
+            dynamicDiv.classList.add('dynamic-field', 'tuition-dynamic');
+
+            const label = document.createElement('label');
+            label.innerHTML = '<strong>Additional Tuition ($):</strong>';
+            label.style.flex = '2';
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.placeholder = '';
+            input.style.flex = '3';
+            input.addEventListener('input', calculateSubtotals);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.classList.add('remove-field-btn');
+            removeBtn.textContent = 'Remove';
+
+            removeBtn.addEventListener('click', () => {
+                tuitionContainer.removeChild(dynamicDiv);
+                calculateSubtotals();
+            });
+
+            dynamicDiv.appendChild(label);
+            dynamicDiv.appendChild(input);
+            dynamicDiv.appendChild(removeBtn);
+
+            // Insert dynamic field ABOVE Tuition:
+            tuitionContainer.insertBefore(dynamicDiv, document.getElementById('tuition-reference').nextSibling);
+        });
+
+        // Helper Functions to Reset
+        function hideAllPanels() {
+            billOnlyPanel.style.display = 'none';
+            billAidTuitionPanel.style.display = 'none';
+            enterBillFields.classList.add('hidden');
+            computeBillFields.classList.add('hidden');
+        }
+
+        function resetAll() {
+            haveBillSelect.value = '';
+            resetEnterOrCompute();
+        }
+
+        function resetEnterOrCompute() {
+            enterOrComputeSelect.value = '';
+            hideAllPanels();
+        }
+
+        function resetBillFields(resetPanel) {
+            collegeBillInput.value = '';
+            collegeBillInput.readOnly = false;
+            billRefundSelect.value = 'bill';
+            billRefundSelect.disabled = false;
+            calculatedBalanceInput.value = '';
+            saveInitialButton.disabled = true;
+            // Cancel always enabled after showing panel
+            if (resetPanel) {
+                billOnlyPanel.style.display = 'none';
+                cancelInitialButton.disabled = true;
+            }
+        }
+
+        function resetComputeFields(resetPanel) {
+            financialAidFields.concat(tuitionFields).forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('financial-aid-subtotal').value = '';
+            document.getElementById('tuition-subtotal').value = '';
+
+            document.querySelectorAll('.financial-aid-dynamic, .tuition-dynamic').forEach(field => field.remove());
+
+            [...computeForm.querySelectorAll('input[type="number"]')].forEach(input => {
+                if (input.id !== 'financial-aid-subtotal' && input.id !== 'tuition-subtotal') {
+                    input.readOnly = true;
+                }
+            });
+            addFinancialAidFieldButton.disabled = true;
+            addTuitionFieldButton.disabled = true;
+            saveComputeButton.disabled = true;
+            cancelComputeButton.disabled = true;
+
+            if (resetPanel) {
+                billAidTuitionPanel.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
