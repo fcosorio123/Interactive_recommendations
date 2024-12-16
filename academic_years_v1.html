@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enhanced Financial Plans</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables for Consistent Styling */
+    :root {
+      --primary-color: #720728; /* Original primary color */
+      --primary-hover: #5a0120; /* Original primary hover color */
+      --delete-color: #e29797; /* Lighter red for delete button */
+      --delete-hover: #e29797; /* Darker red on hover */
+      --background-color: #f9f9f9; /* Lighter background color for better contrast */
+      --card-background: #ffffff;
+      --text-color: #333333; /* Original text color */
+      --muted-color: #777777; /* Original muted color */
+      --border-color: #e0e0e0; /* Original border color */
+      --shadow-color: rgba(0, 0, 0, 0.05); /* Lighter shadow for subtle depth */
+      --font-primary: 'Roboto', sans-serif;
+      --font-secondary: 'Montserrat', sans-serif;
+      --transition-speed: 0.3s;
+      --border-radius: 8px; /* Reduced border radius for modern look */
+      --max-width: 1400px; /* Increased max-width for larger layouts */
+    }
+
+    /* General Styles */
+    body {
+      font-family: var(--font-primary);
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      position: relative; /* For positioning unlock buttons */
+      min-height: 100vh;
+      padding-bottom: 100px; /* Space for unlock buttons */
+    }
+
+    h1 {
+      font-family: var(--font-secondary);
+      font-size: 40px; /* Increased font size */
+      color: #000;
+      text-align: left;
+      margin-bottom: 35px; /* Increased margin */
+    }
+
+    .container {
+      padding: 35px 60px; /* Increased padding */
+      max-width: var(--max-width);
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    /* Tabs */
+    .tab-container {
+      display: flex;
+      gap: 15px; /* Increased gap */
+      justify-content: flex-start;
+      margin-bottom: 35px; /* Increased margin */
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-button {
+      background-color: transparent;
+      border: none;
+      padding: 12px 24px; /* Increased padding */
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 18px; /* Increased font size */
+      color: var(--muted-color);
+      transition: color var(--transition-speed), border-bottom var(--transition-speed);
+      border-bottom: 3px solid transparent; /* Increased border thickness */
+      display: flex;
+      align-items: center;
+      gap: 5px; /* Space between text and icon */
+    }
+
+    .tab-button:hover {
+      color: var(--text-color);
+    }
+
+    .tab-button.active {
+      color: var(--primary-color);
+      border-bottom: 3px solid var(--primary-color);
+    }
+
+    /* Locked Tabs */
+    .tab-button.locked {
+      color: var(--muted-color);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .tab-button.locked:hover {
+      color: var(--muted-color); /* No change on hover */
+    }
+
+    /* Lock Icon */
+    .lock-icon {
+      font-size: 16px;
+      color: var(--muted-color);
+      display: inline-block;
+    }
+
+    /* Panels */
+    .panel {
+      display: none;
+      flex-direction: column;
+      gap: 35px; /* Increased gap */
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .panel.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Plan Options */
+    .plan-options {
+      display: flex;
+      align-items: center;
+      gap: 20px; /* Increased gap */
+      flex-wrap: wrap;
+    }
+
+    .select {
+      padding: 14px 28px; /* Increased padding */
+      border-radius: var(--border-radius);
+      font-size: 16px; /* Increased font size */
+      color: #495057;
+      border: 1px solid var(--border-color);
+      background-color: #fff;
+      appearance: none;
+      background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23495057" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 20px center; /* Adjusted position */
+      background-size: 16px 16px;
+      cursor: pointer;
+      transition: border-color var(--transition-speed);
+      flex: 1 1 250px; /* Increased width */
+    }
+
+    .select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    .select option:disabled {
+      color: #999;
+      background-color: #f0f0f0;
+      cursor: not-allowed;
+    }
+
+    .select option:disabled:hover {
+      background-color: #f0f0f0;
+    }
+
+    .btn {
+      padding: 14px 30px; /* Increased padding */
+      background-color: var(--primary-color);
+      color: #fff;
+      text-align: center;
+      border-radius: var(--border-radius);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+      transition: background-color var(--transition-speed), transform var(--transition-speed);
+      cursor: pointer;
+      border: none;
+      font-size: 16px; /* Increased font size */
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Cards Container */
+    .cards-container {
+      display: flex;
+      gap: 25px; /* Increased gap */
+      flex-wrap: wrap;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-background);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 25px; /* Increased padding */
+      box-shadow: 0 3px 10px var(--shadow-color); /* Increased shadow */
+      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+      flex: 1 1 350px; /* Increased width */
+      max-width: 400px; /* Increased max-width */
+      position: relative;
+    }
+
+    .card.hidden {
+      display: none;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px var(--shadow-color);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px; /* Increased margin */
+    }
+
+    .card-header strong {
+      font-size: 22px; /* Increased font size */
+      color: var(--text-color);
+    }
+
+    .card p {
+      margin: 12px 0; /* Increased margin */
+      font-size: 16px; /* Increased font size */
+    }
+
+    .note {
+      font-size: 16px; /* Increased font size */
+      color: var(--muted-color);
+      background-color: #fff;
+      padding: 20px; /* Increased padding */
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 3px 10px var(--shadow-color);
+    }
+
+    .note strong {
+      color: var(--text-color);
+    }
+
+    /* Delete Button */
+    .delete-btn {
+      position: absolute;
+      top: 20px; /* Adjusted position */
+      right: 20px; /* Adjusted position */
+      background-color: var(--delete-color); /* Updated to delete color */
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 8px 16px; /* Increased padding */
+      cursor: pointer;
+      font-size: 16px; /* Increased font size */
+      transition: background-color var(--transition-speed);
+    }
+
+    .delete-btn:hover {
+      background-color: var(--delete-hover); /* Updated to delete hover color */
+    }
+
+    /* Unlock Buttons at the Bottom */
+    .unlock-buttons {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      /* Make buttons barely visible */
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .unlock-buttons button {
+      padding: 8px 12px;
+      font-size: 14px;
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s, background-color var(--transition-speed);
+    }
+
+    .unlock-buttons button:hover {
+      opacity: 1;
+      background-color: var(--primary-hover);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px 35px; /* Adjusted padding for smaller screens */
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .tab-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .plan-options {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .select {
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .cards-container {
+        flex-direction: column;
+      }
+
+      .card {
+        max-width: 100%;
+      }
+
+      .delete-btn {
+        top: 15px;
+        right: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Financial Plans</h1>
+
+    <!-- Tabs -->
+    <div class="tab-container">
+      <button class="tab-button active" data-target="year2024">2024/2025</button>
+      <button class="tab-button locked" data-target="year2025">2025/2026 <span class="lock-icon">🔒</span></button>
+      <button class="tab-button locked" data-target="year2026">2026/2027 <span class="lock-icon">🔒</span></button>
+      <button class="tab-button locked" data-target="year2027">2027/2028 <span class="lock-icon">🔒</span></button>
+    </div>
+
+    <!-- Panels -->
+    <!-- Template for Panels -->
+    <div id="year2024" class="panel active">
+      <div class="plan-options">
+        <select class="select plan-selection">
+          <option value="" disabled selected>Select a plan option</option>
+          <option value="fall">Only Fall 2024</option>
+          <option value="spring" disabled title="Only Spring 2025 is available if Fall 2024 is selected">Only Spring 2025</option>
+          <option value="both">Both Fall 2024 & Spring 2025</option>
+        </select>
+        <button class="btn confirm-plan-btn">Add Plan</button>
+      </div>
+
+      <!-- Cards Container -->
+      <div class="cards-container">
+        <!-- Fall Plan (Hidden by default) -->
+        <div class="fall-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Fall 2024</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>Dec 15, 2024</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+
+        <!-- Spring Plan (Hidden by default) -->
+        <div class="spring-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Spring 2025</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>May 15, 2025</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+      </div>
+
+      <!-- Note to User -->
+      <div class="note">
+        <p><strong>Note:</strong> The Spring 2025 option is only available if the Fall 2024 plan is selected and displayed first.</p>
+      </div>
+    </div>
+
+    <!-- Repeat the structure for other years -->
+    <div id="year2025" class="panel">
+      <div class="plan-options">
+        <select class="select plan-selection">
+          <option value="" disabled selected>Select a plan option</option>
+          <option value="fall">Only Fall 2025</option>
+          <option value="spring" disabled title="Only Spring 2026 is available if Fall 2025 is selected">Only Spring 2026</option>
+          <option value="both">Both Fall 2025 & Spring 2026</option>
+        </select>
+        <button class="btn confirm-plan-btn">Add Plan</button>
+      </div>
+
+      <!-- Cards Container -->
+      <div class="cards-container">
+        <!-- Fall Plan (Hidden by default) -->
+        <div class="fall-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Fall 2025</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>Dec 15, 2025</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+
+        <!-- Spring Plan (Hidden by default) -->
+        <div class="spring-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Spring 2026</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>May 15, 2026</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+      </div>
+
+      <!-- Note to User -->
+      <div class="note">
+        <p><strong>Note:</strong> The Spring 2026 option is only available if the Fall 2025 plan is selected and displayed first.</p>
+      </div>
+    </div>
+
+    <!-- Add similar panels for year2026 and year2027 -->
+    <div id="year2026" class="panel">
+      <div class="plan-options">
+        <select class="select plan-selection">
+          <option value="" disabled selected>Select a plan option</option>
+          <option value="fall">Only Fall 2026</option>
+          <option value="spring" disabled title="Only Spring 2027 is available if Fall 2026 is selected">Only Spring 2027</option>
+          <option value="both">Both Fall 2026 & Spring 2027</option>
+        </select>
+        <button class="btn confirm-plan-btn">Add Plan</button>
+      </div>
+
+      <!-- Cards Container -->
+      <div class="cards-container">
+        <!-- Fall Plan (Hidden by default) -->
+        <div class="fall-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Fall 2026</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>Dec 15, 2026</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+
+        <!-- Spring Plan (Hidden by default) -->
+        <div class="spring-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Spring 2027</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>May 15, 2027</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+      </div>
+
+      <!-- Note to User -->
+      <div class="note">
+        <p><strong>Note:</strong> The Spring 2027 option is only available if the Fall 2026 plan is selected and displayed first.</p>
+      </div>
+    </div>
+
+    <div id="year2027" class="panel">
+      <div class="plan-options">
+        <select class="select plan-selection">
+          <option value="" disabled selected>Select a plan option</option>
+          <option value="fall">Only Fall 2027</option>
+          <option value="spring" disabled title="Only Spring 2028 is available if Fall 2027 is selected">Only Spring 2028</option>
+          <option value="both">Both Fall 2027 & Spring 2028</option>
+        </select>
+        <button class="btn confirm-plan-btn">Add Plan</button>
+      </div>
+
+      <!-- Cards Container -->
+      <div class="cards-container">
+        <!-- Fall Plan (Hidden by default) -->
+        <div class="fall-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Fall 2027</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>Dec 15, 2027</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+
+        <!-- Spring Plan (Hidden by default) -->
+        <div class="spring-plan card hidden">
+          <button class="delete-btn">Delete</button>
+          <div class="card-header">
+            <strong>Spring 2028</strong>
+          </div>
+          <p>Recommendations: <strong>0 of 10 Done</strong></p>
+          <p>Bill Due Date: <strong>May 15, 2028</strong></p>
+          <button class="btn">Get Started</button>
+        </div>
+      </div>
+
+      <!-- Note to User -->
+      <div class="note">
+        <p><strong>Note:</strong> The Spring 2028 option is only available if the Fall 2027 plan is selected and displayed first.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlock Buttons at the very bottom -->
+  <div class="unlock-buttons">
+    <button data-target="year2025">Unlock 2025/2026</button>
+    <button data-target="year2026">Unlock 2026/2027</button>
+    <button data-target="year2027">Unlock 2027/2028</button>
+  </div>
+
+  <script>
+    // Object to store the state of each panel
+    const panelStates = {};
+
+    // Initialize panelStates for each panel
+    document.querySelectorAll('.panel').forEach(panel => {
+      const panelId = panel.id;
+      panelStates[panelId] = {
+        selectedOption: "",
+        fallVisible: false,
+        springVisible: false
+      };
+    });
+
+    // Tab Navigation Functionality
+    const tabs = document.querySelectorAll('.tab-button');
+    const panels = document.querySelectorAll('.panel');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (tab.classList.contains('locked')) {
+          // If tab is locked, do nothing
+          return;
+        }
+
+        // Remove active class from all tabs and panels
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+
+        // Add active class to the clicked tab and corresponding panel
+        tab.classList.add('active');
+        const targetPanel = document.getElementById(tab.dataset.target);
+        targetPanel.classList.add('active');
+
+        // Retrieve the state for the target panel
+        const state = panelStates[targetPanel.id];
+
+        const planSelection = targetPanel.querySelector('.plan-selection');
+        const fallPlan = targetPanel.querySelector('.fall-plan');
+        const springPlan = targetPanel.querySelector('.spring-plan');
+        const springOption = planSelection.querySelector('option[value="spring"]');
+
+        // Restore the dropdown selection
+        planSelection.value = state.selectedOption;
+
+        // Show or hide Fall Plan
+        if (state.fallVisible) {
+          fallPlan.classList.remove('hidden');
+        } else {
+          fallPlan.classList.add('hidden');
+        }
+
+        // Show or hide Spring Plan
+        if (state.springVisible) {
+          springPlan.classList.remove('hidden');
+        } else {
+          springPlan.classList.add('hidden');
+        }
+
+        // Enable or disable Spring option based on Fall plan visibility
+        if (state.fallVisible || state.selectedOption === 'both') {
+          springOption.disabled = false;
+        } else {
+          springOption.disabled = true;
+        }
+      });
+    });
+
+    // Function to handle deletion of plans
+    function handleDelete(panelId, planType) {
+      const panel = document.getElementById(panelId);
+      const fallPlan = panel.querySelector('.fall-plan');
+      const springPlan = panel.querySelector('.spring-plan');
+
+      if (planType === 'fall') {
+        // Hide Fall Plan
+        fallPlan.classList.add('hidden');
+        // Update state
+        panelStates[panelId].fallVisible = false;
+        panelStates[panelId].selectedOption = "";
+
+        // Also hide Spring Plan if it was part of 'both'
+        if (panelStates[panelId].springVisible) {
+          springPlan.classList.add('hidden');
+          panelStates[panelId].springVisible = false;
+          // Reset dropdown if 'both' was selected
+          const planSelection = panel.querySelector('.plan-selection');
+          planSelection.value = "";
+        }
+      } else if (planType === 'spring') {
+        // Hide Spring Plan
+        springPlan.classList.add('hidden');
+        // Update state
+        panelStates[panelId].springVisible = false;
+
+        // If 'both' was selected, update to 'only fall'
+        if (panelStates[panelId].selectedOption === 'both') {
+          panelStates[panelId].selectedOption = 'fall';
+          const planSelection = panel.querySelector('.plan-selection');
+          planSelection.value = 'fall';
+        }
+      }
+    }
+
+    // Delegate event listeners to handle multiple panels and delete buttons
+    document.querySelectorAll('.panel').forEach(panel => {
+      const panelId = panel.id;
+      const planSelection = panel.querySelector('.plan-selection');
+      const confirmPlanBtn = panel.querySelector('.confirm-plan-btn');
+      const fallPlan = panel.querySelector('.fall-plan');
+      const springPlan = panel.querySelector('.spring-plan');
+      const springOption = planSelection.querySelector('option[value="spring"]');
+
+      // Handle the user's selection and show the relevant plans
+      confirmPlanBtn.addEventListener('click', () => {
+        const selectedOption = planSelection.value;
+
+        if (selectedOption === 'fall') {
+          // Hide Spring Plan
+          springPlan.classList.add('hidden');
+          // Show Fall Plan
+          fallPlan.classList.remove('hidden');
+          // Enable Spring option
+          springOption.disabled = false;
+
+          // Update the state
+          panelStates[panelId].selectedOption = 'fall';
+          panelStates[panelId].fallVisible = true;
+          panelStates[panelId].springVisible = false;
+        } else if (selectedOption === 'both') {
+          // Show both Fall and Spring Plans
+          fallPlan.classList.remove('hidden');
+          springPlan.classList.remove('hidden');
+          // Enable Spring option
+          springOption.disabled = false;
+
+          // Update the state
+          panelStates[panelId].selectedOption = 'both';
+          panelStates[panelId].fallVisible = true;
+          panelStates[panelId].springVisible = true;
+        } else if (selectedOption === 'spring') {
+          // Only show Spring if Fall is visible
+          if (!fallPlan.classList.contains('hidden')) {
+            springPlan.classList.remove('hidden');
+            panelStates[panelId].springVisible = true;
+            panelStates[panelId].selectedOption = 'spring';
+          } else {
+            // If Fall is not visible, alert the user
+            alert('Please select a Fall plan first before adding a Spring plan.');
+            return; // Exit the function to prevent state update
+          }
+        } else {
+          // If invalid selection or dependency not met
+          alert('Please select a valid plan option.');
+          return; // Exit the function to prevent state update
+        }
+
+        // Optionally reset the dropdown after selection
+        // planSelection.value = "";
+      });
+
+      // Enable the Spring option only if Fall is selected or Both is selected
+      planSelection.addEventListener('change', () => {
+        const selected = planSelection.value;
+        if (selected === 'fall' || selected === 'both') {
+          springOption.disabled = false;
+        } else {
+          springOption.disabled = true;
+        }
+      });
+
+      // Handle delete buttons
+      panel.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent triggering other events
+          const card = btn.parentElement;
+          const isFall = card.classList.contains('fall-plan');
+          const isSpring = card.classList.contains('spring-plan');
+
+          if (isFall) {
+            handleDelete(panelId, 'fall');
+          } else if (isSpring) {
+            handleDelete(panelId, 'spring');
+          }
+
+          // Optionally, add a confirmation before deletion
+          // if (confirm('Are you sure you want to delete this plan?')) {
+          //   // Perform deletion
+          // }
+        });
+      });
+    });
+
+    // Initialize: Disable Spring options by default in all dropdowns
+    document.querySelectorAll('.plan-selection').forEach(select => {
+      const springOption = select.querySelector('option[value="spring"]');
+      springOption.disabled = true;
+    });
+
+    // Unlock Buttons Functionality
+    const unlockButtons = document.querySelectorAll('.unlock-buttons button');
+
+    unlockButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetPanelId = button.dataset.target;
+        const targetTab = document.querySelector(`.tab-button[data-target="${targetPanelId}"]`);
+
+        if (targetTab && targetTab.classList.contains('locked')) {
+          targetTab.classList.remove('locked');
+          // Remove the lock icon
+          const lockIcon = targetTab.querySelector('.lock-icon');
+          if (lockIcon) {
+            lockIcon.remove();
+          }
+          // Optionally, increase opacity or change style to indicate unlocked
+          targetTab.style.opacity = '1';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
