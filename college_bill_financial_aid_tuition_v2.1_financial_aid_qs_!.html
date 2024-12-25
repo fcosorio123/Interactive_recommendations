@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARBOL - College Bill Module</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+
+        ::-webkit-scrollbar-track {
+            background: #ecf0f1;
+        }
+
+
+        ::-webkit-scrollbar-thumb {
+            background: #2980b9;
+            border-radius: 4px;
+        }
+
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6377 100%);
+            color: #ecf0f1;
+            padding: 30px 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.8em;
+            color: #fff;
+        }
+
+
+        .sidebar .profile {
+            font-size: 1em;
+            margin-top: 40px;
+            color: #ecf0f1;
+            line-height: 1.6;
+        }
+
+
+        .sidebar .profile p strong {
+            font-weight: 600;
+        }
+
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            background: #f4f6f9;
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+
+        .panel {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            background-color: #f4f6f9;
+            opacity: 0;
+            transition: all 0.5s ease;
+            overflow-y: auto;
+        }
+
+
+        .active-panel {
+            left: 0;
+            opacity: 1;
+            z-index: 2;
+        }
+
+
+        .previous-panel {
+            left: -100%;
+            opacity: 0;
+            z-index: 1;
+        }
+
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+
+        h3 {
+            color: #333;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+
+        p {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+
+        /* Option Buttons */
+        .option-buttons {
+            display: flex;
+            justify-content: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+
+        .option-button {
+            flex: 0 0 auto;
+            width: 180px;
+            height: 150px;
+            background-color: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+
+        .option-button:hover {
+            background-color: #1f6391;
+            transform: translateY(-2px);
+        }
+
+
+        .option-button i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+
+        /* Input Fields */
+        input[type="file"],
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ccd1d7;
+            border-radius: 6px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+        }
+
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 5px rgba(41, 128, 185, 0.3);
+            outline: none;
+        }
+
+
+        /* Navigation Buttons */
+        .navigation-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+
+        .nav-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            width: 100px;
+            text-align: center;
+        }
+
+
+        .back-button {
+            background-color: #7f8c8d;
+            color: #fff;
+        }
+
+
+        .back-button:hover {
+            background-color: #616a6b;
+        }
+
+
+        .next-button {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+
+        .next-button:hover {
+            background-color: #218838;
+        }
+
+
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+
+        /* Start Buttons in Red */
+        .start-button {
+            background-color: #e74c3c !important;
+            color: #fff !important;
+        }
+
+
+        /* Styling for the file input */
+        #bill-upload {
+            padding: 50px 16px;
+            font-size: 18px;
+            border: 3px dashed #2980b9;
+            background-color: #fff;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+
+        #bill-upload:hover {
+            border-color: #1f6391;
+        }
+
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-size:14px;
+        }
+
+
+        th {
+            background-color: #2980b9;
+            color: white;
+            font-weight: 600;
+        }
+
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+
+        /* Sub-Panel Styles */
+        .sub-panel {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccd1d7;
+            border-radius: 6px;
+            background-color: #ffffff;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+
+        .sub-panel.active {
+            display: block;
+        }
+
+
+        /* Confirmation Messages */
+        .confirmation {
+            color: green;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+
+        /* Notes */
+        .note {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+
+
+        /* Help Section */
+        .help-section {
+            margin-top: 20px;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+
+        .help-section strong {
+            font-weight: 600;
+        }
+
+
+        /* Hyperlink Text Styling */
+        .hyperlink {
+            color: #2980b9;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+
+        .hyperlink:hover {
+            text-decoration: underline;
+        }
+
+
+        .module-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            align-items: flex-start;
+            position: relative;
+        }
+
+
+        .module-box h3 {
+            margin:0;
+        }
+
+
+        .module-box-buttons {
+            display:flex;
+            gap:10px;
+            margin-top:auto;
+        }
+
+
+        .panel form label strong {
+            display:block;
+            margin-bottom:5px;
+            font-size:14px;
+        }
+
+
+        #health-insurance-note {
+            margin: 5px 0 0;
+        }
+
+
+        /* A label for when Tuition is done */
+        #tuition-status {
+            color: green;
+            margin-left: 10px;
+        }
+
+
+        /* A label for when Financial Aid is done */
+        #fa-status {
+            color: green;
+            margin-left: 10px;
+        }
+
+
+        .optional-note {
+            font-size: 12px;
+            color:#7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Remaining Balance</h2>
+        <div class="profile">
+            <p><strong>Financial Aid:</strong> $0</p>
+            <p><strong>College Bill:</strong> $0</p>
+            <p><strong>College Bill Balance:</strong> $0</p>
+        </div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+
+        <!-- Panel 1: College Bill Module -->
+        <div id="panel-1" class="panel active-panel">
+            <h2>College Bill Module (Spring 2025)</h2>
+            <p>To address your College Bill, please select one of the following:</p>
+           
+            <div class="option-buttons">
+                <button class="option-button" onclick="showPanel('panel-upload')">
+                    <i class="fas fa-upload"></i>
+                    Upload Bill
+                </button>
+                <button class="option-button" onclick="showPanel('panel-estimate')">
+                    <i class="fas fa-edit"></i>
+                    Estimate
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Panel 2: Upload College Bill -->
+        <div id="panel-upload" class="panel hidden">
+            <h2>Upload Your College Bill</h2>
+            <p>Please upload your college bill below:</p>
+            <input type="file" id="bill-upload" accept="application/pdf">
+            <div class="confirmation" id="upload-confirmation"></div>
+            <p><strong><a href="#" class="hyperlink">Click here to access a copy of your bill</a></strong></p>
+            <div class="help-section">
+                <p><strong>Need help?</strong> Contact our support team by clicking <a href="mailto:support@arbol.com" class="hyperlink">here!</a></p>
+            </div>
+            <div class="navigation-buttons">
+                <button class="nav-button back-button" onclick="showPanel('panel-1')">Back</button>
+                <button id="submit-button" class="nav-button next-button" disabled onclick="submitUpload()">Submit</button>
+            </div>
+        </div>
+
+
+        <!-- New Output Page (Blank Page) -->
+        <div id="panel-output" class="panel hidden">
+            <h2>Your Output Page</h2>
+            <p>This is a blank output page.</p>
+            <div class="navigation-buttons">
+                <button class="nav-button back-button" onclick="showPanel('panel-1')">Back</button>
+            </div>
+        </div>
+
+
+        <!-- Panel: Estimate your College Bill Balance -->
+        <div id="panel-estimate" class="panel hidden">
+            <h2>Estimate your College Bill Balance</h2>
+            <p>Please complete both modules below to generate and submit your estimated College Bill balance.</p>
+            <div style="display: flex; gap: 20px; margin-top:20px;">
+                <div class="module-box">
+                    <h3>Financial Aid <span id="fa-status"></span></h3>
+                    <p class="note">Answer a few questions to estimate your financial aid.</p>
+                    <p id="financial-aid-total-display" class="note"></p>
+                    <div class="module-box-buttons">
+                        <button class="nav-button start-button" id="financial-aid-start-btn">Start</button>
+                        <button class="nav-button" id="financial-aid-edit-btn" disabled>Edit</button>
+                    </div>
+                </div>
+                <div class="module-box">
+                    <h3>Tuition <span id="tuition-status"></span></h3>
+                    <p class="note">Answer a few questions to estimate your tuition bill.</p>
+                    <p id="tuition-total-display" class="note"></p>
+                    <div class="module-box-buttons">
+                        <button class="nav-button start-button" id="tuition-start-btn" onclick="startTuitionModule()">Start</button>
+                        <button class="nav-button" id="tuition-edit-btn" disabled>Edit</button>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation-buttons">
+                <button class="nav-button back-button" onclick="showPanel('panel-1')">Back</button>
+                <button class="nav-button next-button" id="estimate-submit-btn" disabled>Submit</button>
+            </div>
+        </div>
+
+
+        <!-- Financial Aid Module Panel -->
+        <div id="panel-financial-aid" class="panel hidden">
+            <h2>Financial Aid Module</h2>
+            <form id="fa-form">
+                <!-- FAFSA -->
+                <label><strong>1. Will you apply for financial aid by submitting the FAFSA?</strong></label>
+                <select id="fa-fafsa" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="NotSure">I'm not sure</option>
+                </select>
+
+
+                <div id="fa-fafsa-followup" style="display:none; margin-left:20px;">
+                    <label><strong>Do you know your SAI?</strong></label>
+                    <select id="fa-sai-option">
+                        <option value="">--Select--</option>
+                        <option value="enter-value">Enter the exact value</option>
+                        <option value="calculate">Calculate it</option>
+                    </select>
+
+
+                    <div id="fa-sai-enter-section" style="display:none; margin-left:20px;">
+                        <label><strong>Enter your SAI:</strong></label>
+                        <input type="number" id="fa-sai-exact" min="0" placeholder="Enter value or 0 if unknown">
+                    </div>
+
+
+                    <div id="fa-sai-calc-section" style="display:none; margin-left:20px;">
+                        <p class="note">Use this link to compute your SAI:
+                            <a href="https://studentaid.gov/aid-estimator/" target="_blank" class="hyperlink">SAI Estimator</a>.
+                            If unknown, enter 0.
+                        </p>
+                        <label><strong>Enter your computed SAI:</strong></label>
+                        <input type="number" id="fa-sai-calc-value" min="0">
+                    </div>
+
+
+                    <label><strong>What’s your grade level?</strong></label>
+                    <select id="fa-grade-level" required>
+                        <option value="">--Select--</option>
+                        <option value="Freshman">Freshman</option>
+                        <option value="Sophomore">Sophomore</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Graduate">Graduate</option>
+                    </select>
+                </div>
+
+
+                <!-- State Aid -->
+                <label><strong>2. Will you apply for state aid?</strong></label>
+                <select id="fa-state-aid" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="NotSure">I'm not sure</option>
+                </select>
+
+
+                <div id="fa-state-followup" style="display:none; margin-left:20px;">
+                    <label><strong>Do you know your state grant?</strong></label>
+                    <select id="fa-state-grant-option">
+                        <option value="">--Select--</option>
+                        <option value="enter-value">Enter the exact value</option>
+                        <option value="calculate">Calculate it</option>
+                    </select>
+
+
+                    <div id="fa-state-enter-section" style="display:none; margin-left:20px;">
+                        <label><strong>Enter your state grant:</strong></label>
+                        <input type="number" id="fa-state-exact" min="0" placeholder="Enter value or 0 if unknown">
+                    </div>
+
+
+                    <div id="fa-state-calc-section" style="display:none; margin-left:20px;">
+                        <p class="note">Use this link to compute your state grant:
+                            <a href="https://www.hesc.ny.gov/find-aid/nys-grants-scholarships/tuition-assistance-program-tap/tap-award-estimator/" target="_blank" class="hyperlink">State Grant Estimator</a>.
+                            If unknown, enter 0.
+                        </p>
+                        <label><strong>Enter your computed state grant:</strong></label>
+                        <input type="number" id="fa-state-calc-value" min="0">
+                    </div>
+                </div>
+
+
+                <!-- Institutional Scholarships -->
+                <label><strong>3. Will you receive any scholarships directly from your college?</strong></label>
+                <select id="fa-college-scholarships" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="NotSure">I'm not sure</option>
+                </select>
+
+
+                <div id="fa-college-schol-followup" style="display:none; margin-left:20px;">
+                    <p class="note">If you don't know exact value, enter 0.</p>
+                    <label><strong>Enter your total scholarship amount:</strong></label>
+                    <input type="number" id="fa-college-schol-amount" min="0" placeholder="Enter value or 0 if unknown">
+                </div>
+
+
+                <!-- Institutional Grants -->
+                <label><strong>4. Will you receive any grants directly from your college?</strong></label>
+                <select id="fa-college-grants" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="NotSure">I'm not sure</option>
+                </select>
+
+
+                <div id="fa-college-grants-followup" style="display:none; margin-left:20px;">
+                    <p class="note">If you don't know exact value, enter 0.</p>
+                    <label><strong>Enter your total grants amount:</strong></label>
+                    <input type="number" id="fa-college-grants-amount" min="0" placeholder="Enter value or 0 if unknown">
+                </div>
+
+
+                <!-- Other External Aid -->
+                <label><strong>5. Do you expect to receive any other financial aid like external scholarships?</strong></label>
+                <select id="fa-other-aid" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="NotSure">I'm not sure</option>
+                </select>
+
+
+                <div id="fa-other-aid-followup" style="display:none; margin-left:20px;">
+                    <p class="note">If you don't know exact value, enter 0.</p>
+                    <label><strong>Enter the total amount:</strong></label>
+                    <input type="number" id="fa-other-aid-amount" min="0" placeholder="Enter value or 0 if unknown">
+                </div>
+
+
+                <!-- Financial Aid Table -->
+                <div id="fa-table-section" style="display:none; margin-top:20px;">
+                    <h3>Your Financial Aid Information for Spring 2024</h3>
+                    <table id="fa-table">
+                        <tr><th>Item</th><th>Amount</th></tr>
+                        <tr><td>Pell</td><td class="fa-amount">$5,000</td></tr>
+                        <tr><td>TAP</td><td class="fa-amount">$2,000</td></tr>
+                        <tr><td>Institutional Scholarships</td><td class="fa-amount">$1,000</td></tr>
+                        <tr><td>Institutional Grants</td><td class="fa-amount">$1,000</td></tr>
+                        <tr><td>Subsidized Loan</td><td class="fa-amount">$5,000</td></tr>
+                        <tr><td>Unsubsidized Loan</td><td class="fa-amount">$5,000</td></tr>
+                        <tr><td>Other</td><td class="fa-amount">$100</td></tr>
+                        <tr><td><strong>Total</strong></td><td id="fa-total"></td></tr>
+                    </table>
+                </div>
+
+
+                <div class="navigation-buttons">
+                    <button type="button" class="nav-button back-button" onclick="showPanel('panel-estimate')">Back</button>
+                    <button type="submit" id="fa-submit-btn" class="nav-button next-button" disabled>Submit</button>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- Tuition Module Panel -->
+        <div id="panel-tuition-module" class="panel hidden">
+            <h2>Tuition Module - Spring 2025</h2>
+            <form id="tuition-module-form">
+                <label><strong>1. Are you Undergraduate or Graduate?</strong></label>
+                <select id="degree-level" required>
+                    <option value="">--Select--</option>
+                    <option value="Undergraduate">Undergraduate</option>
+                    <option value="Graduate">Graduate</option>
+                </select>
+
+
+                <label><strong>2. Will you be enrolled Full Time?</strong></label>
+                <select id="full-time" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+
+
+                <div id="part-time-credits-section" style="display:none; margin-left:20px;">
+                    <label><strong>How many credits are you planning on taking?</strong></label>
+                    <select id="credit-option" required>
+                        <option value="">--Select--</option>
+                        <option value="enter-value">Enter the exact value</option>
+                        <option value="calculate-credits">Calculate my credits</option>
+                    </select>
+
+
+                    <div id="enter-value-section" style="display:none; margin-left:20px;">
+                        <label><strong>Enter the exact number of credits:</strong></label>
+                        <input type="number" id="exact-credits" min="1">
+                    </div>
+
+
+                    <div id="calculate-credits-section" style="display:none; margin-left:20px;">
+                        <label><strong>How many classes do you plan on taking?</strong></label>
+                        <input type="number" id="num-classes" value="3" min="1">
+                        <label><strong>Average number of credits per class?</strong></label>
+                        <input type="number" id="credits-per-class" value="3" min="1">
+                    </div>
+                </div>
+
+
+                <label><strong>3. Is your school outside of your state of residence?</strong></label>
+                <select id="out-of-state" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+
+
+                <label><strong>4. Do you plan to live on campus?</strong></label>
+                <select id="live-on-campus" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+
+
+                <label><strong>5. Are you planning on enrolling in the college’s Health Insurance plan?</strong></label>
+                <select id="health-insurance" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <div id="health-insurance-note" class="note"></div>
+
+
+                <label><strong>6. Will you be choosing an on-campus meal plan?</strong></label>
+                <select id="meal-plan-choice" required>
+                    <option value="">--Select--</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+
+
+                <div id="tuition-estimate-table" style="display:none; margin-top:20px;">
+                    <h3>Your Tuition Bill Information for Spring 2024</h3>
+                    <table id="tuition-table">
+                        <tr><th>Item</th><th>Amount</th></tr>
+                        <tr><td>Tuition</td><td class="amount">$10,000</td></tr>
+                        <tr><td>Fees</td><td class="amount">$1,000</td></tr>
+                        <tr><td>Health Insurance</td><td class="amount">$2,000</td></tr>
+                        <tr><td>Housing</td><td class="amount">$6,000</td></tr>
+                        <tr><td>Meals</td><td class="amount">$2,500</td></tr>
+                        <tr><td>Other</td><td class="amount">$1,000</td></tr>
+                        <tr><td><strong>Total</strong></td><td id="tuition-total"></td></tr>
+                    </table>
+                </div>
+
+
+                <div class="navigation-buttons">
+                    <button type="button" class="nav-button back-button" onclick="showPanel('panel-estimate')">Back</button>
+                    <button type="submit" id="tuition-submit-btn" class="nav-button next-button" disabled>Submit</button>
+                </div>
+            </form>
+        </div>
+
+
+    </div>
+
+
+    <script>
+        // Smooth panel transition
+        function showPanel(panelId) {
+            const currentPanel = document.querySelector('.active-panel');
+            const targetPanel = document.getElementById(panelId);
+
+
+            if (currentPanel && currentPanel.id === panelId) return;
+
+
+            if (currentPanel) {
+                currentPanel.classList.remove('active-panel');
+                currentPanel.classList.add('previous-panel');
+            }
+
+
+            targetPanel.classList.remove('hidden');
+            targetPanel.classList.remove('previous-panel');
+            targetPanel.classList.add('active-panel');
+
+
+            setTimeout(() => {
+                if (currentPanel) {
+                    currentPanel.classList.remove('previous-panel');
+                    currentPanel.classList.add('hidden');
+                }
+            }, 500);
+        }
+
+
+        // Upload Bill Logic
+        const billUploadInput = document.getElementById('bill-upload');
+        const submitButton = document.getElementById('submit-button');
+        const uploadConfirmation = document.getElementById('upload-confirmation');
+
+
+        if (billUploadInput) {
+            billUploadInput.addEventListener('change', function() {
+                if (billUploadInput.files.length > 0) {
+                    uploadConfirmation.textContent = "Document uploaded successfully!";
+                    submitButton.disabled = false;
+                    submitButton.style.backgroundColor = "#28a745";
+                } else {
+                    uploadConfirmation.textContent = "";
+                    submitButton.disabled = true;
+                }
+            });
+        }
+
+
+        function submitUpload() {
+            if (!submitButton.disabled) {
+                showPanel('panel-output');
+            }
+        }
+
+
+        // Estimate Page Logic
+        const estimateSubmitBtn = document.getElementById('estimate-submit-btn');
+        const tuitionEditBtn = document.getElementById('tuition-edit-btn');
+        const financialAidEditBtn = document.getElementById('financial-aid-edit-btn');
+        const tuitionStatus = document.getElementById('tuition-status');
+        const tuitionTotalDisplay = document.getElementById('tuition-total-display');
+        const faStatus = document.getElementById('fa-status');
+        const faTotalDisplay = document.getElementById('financial-aid-total-display');
+
+
+        function checkAllModulesCompleted() {
+            const tuitionCompleted = !tuitionEditBtn.disabled;
+            const aidCompleted = !financialAidEditBtn.disabled;
+            if (tuitionCompleted && aidCompleted) {
+                estimateSubmitBtn.disabled = false;
+                estimateSubmitBtn.style.backgroundColor = "#28a745";
+            } else {
+                estimateSubmitBtn.disabled = true;
+                estimateSubmitBtn.style.backgroundColor = "#cccccc";
+            }
+        }
+
+
+        estimateSubmitBtn.addEventListener('click', () => {
+            // Both modules done, send to output page
+            showPanel('panel-output');
+        });
+
+
+        // Financial Aid Module Logic
+        const financialAidStartBtn = document.getElementById('financial-aid-start-btn');
+        const faForm = document.getElementById('fa-form');
+
+
+        const faFafsa = document.getElementById('fa-fafsa');
+        const faFafsaFollowup = document.getElementById('fa-fafsa-followup');
+        const faSaiOption = document.getElementById('fa-sai-option');
+        const faSaiEnterSection = document.getElementById('fa-sai-enter-section');
+        const faSaiCalcSection = document.getElementById('fa-sai-calc-section');
+        const faSaiExact = document.getElementById('fa-sai-exact');
+        const faSaiCalcValue = document.getElementById('fa-sai-calc-value');
+        const faGradeLevel = document.getElementById('fa-grade-level');
+
+
+        const faStateAid = document.getElementById('fa-state-aid');
+        const faStateFollowup = document.getElementById('fa-state-followup');
+        const faStateGrantOption = document.getElementById('fa-state-grant-option');
+        const faStateEnterSection = document.getElementById('fa-state-enter-section');
+        const faStateExact = document.getElementById('fa-state-exact');
+        const faStateCalcSection = document.getElementById('fa-state-calc-section');
+        const faStateCalcValue = document.getElementById('fa-state-calc-value');
+
+
+        const faCollegeScholarships = document.getElementById('fa-college-scholarships');
+        const faCollegeScholFollowup = document.getElementById('fa-college-schol-followup');
+        const faCollegeScholAmount = document.getElementById('fa-college-schol-amount');
+
+
+        const faCollegeGrants = document.getElementById('fa-college-grants');
+        const faCollegeGrantsFollowup = document.getElementById('fa-college-grants-followup');
+        const faCollegeGrantsAmount = document.getElementById('fa-college-grants-amount');
+
+
+        const faOtherAid = document.getElementById('fa-other-aid');
+        const faOtherAidFollowup = document.getElementById('fa-other-aid-followup');
+        const faOtherAidAmount = document.getElementById('fa-other-aid-amount');
+
+
+        const faTableSection = document.getElementById('fa-table-section');
+        const faTotalCell = document.getElementById('fa-total');
+        const faSubmitBtn = document.getElementById('fa-submit-btn');
+
+
+        financialAidStartBtn.addEventListener('click', () => {
+            showPanel('panel-financial-aid');
+        });
+
+
+        financialAidEditBtn.addEventListener('click', () => {
+            showPanel('panel-financial-aid');
+        });
+
+
+        faFafsa.addEventListener('change', checkFAFormCompletion);
+        faSaiOption.addEventListener('change', checkFAFormCompletion);
+        faSaiExact.addEventListener('input', checkFAFormCompletion);
+        faSaiCalcValue.addEventListener('input', checkFAFormCompletion);
+        faGradeLevel.addEventListener('change', checkFAFormCompletion);
+
+
+        faStateAid.addEventListener('change', checkFAFormCompletion);
+        faStateGrantOption.addEventListener('change', checkFAFormCompletion);
+        faStateExact.addEventListener('input', checkFAFormCompletion);
+        faStateCalcValue.addEventListener('input', checkFAFormCompletion);
+
+
+        faCollegeScholarships.addEventListener('change', checkFAFormCompletion);
+        faCollegeScholAmount.addEventListener('input', checkFAFormCompletion);
+
+
+        faCollegeGrants.addEventListener('change', checkFAFormCompletion);
+        faCollegeGrantsAmount.addEventListener('input', checkFAFormCompletion);
+
+
+        faOtherAid.addEventListener('change', checkFAFormCompletion);
+        faOtherAidAmount.addEventListener('input', checkFAFormCompletion);
+
+
+        faForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // On submit, FA is done
+            faStatus.innerText = "(Done)";
+            financialAidEditBtn.disabled = false;
+            faTotalDisplay.textContent = `Estimated Total: ${faTotalCell.textContent}`;
+            checkAllModulesCompleted();
+            showPanel('panel-estimate');
+        });
+
+
+        function checkFAFormCompletion() {
+            // FAFSA logic
+            if (!faFafsa.value) return disableFASubmit();
+            if (faFafsa.value === 'Yes') {
+                faFafsaFollowup.style.display = 'block';
+                if (!faSaiOption.value) return disableFASubmit();
+                if (faSaiOption.value === 'enter-value') {
+                    faSaiEnterSection.style.display = 'block';
+                    faSaiCalcSection.style.display = 'none';
+                    if (!faSaiExact.value) return disableFASubmit();
+                } else if (faSaiOption.value === 'calculate') {
+                    faSaiEnterSection.style.display = 'none';
+                    faSaiCalcSection.style.display = 'block';
+                    if (!faSaiCalcValue.value) return disableFASubmit();
+                } else {
+                    faSaiEnterSection.style.display = 'none';
+                    faSaiCalcSection.style.display = 'none';
+                }
+
+
+                if (!faGradeLevel.value) return disableFASubmit();
+
+
+            } else {
+                faFafsaFollowup.style.display = 'none';
+            }
+
+
+            // State Aid
+            if (!faStateAid.value) return disableFASubmit();
+            if (faStateAid.value === 'Yes') {
+                faStateFollowup.style.display = 'block';
+                if (!faStateGrantOption.value) return disableFASubmit();
+                if (faStateGrantOption.value === 'enter-value') {
+                    faStateEnterSection.style.display = 'block';
+                    faStateCalcSection.style.display = 'none';
+                    if (!faStateExact.value) return disableFASubmit();
+                } else if (faStateGrantOption.value === 'calculate') {
+                    faStateEnterSection.style.display = 'none';
+                    faStateCalcSection.style.display = 'block';
+                    if (!faStateCalcValue.value) return disableFASubmit();
+                } else {
+                    faStateEnterSection.style.display = 'none';
+                    faStateCalcSection.style.display = 'none';
+                }
+            } else {
+                faStateFollowup.style.display = 'none';
+            }
+
+
+            // College Scholarships
+            if (!faCollegeScholarships.value) return disableFASubmit();
+            if (faCollegeScholarships.value === 'Yes') {
+                faCollegeScholFollowup.style.display = 'block';
+                if (!faCollegeScholAmount.value) return disableFASubmit();
+            } else {
+                faCollegeScholFollowup.style.display = 'none';
+            }
+
+
+            // College Grants
+            if (!faCollegeGrants.value) return disableFASubmit();
+            if (faCollegeGrants.value === 'Yes') {
+                faCollegeGrantsFollowup.style.display = 'block';
+                if (!faCollegeGrantsAmount.value) return disableFASubmit();
+            } else {
+                faCollegeGrantsFollowup.style.display = 'none';
+            }
+
+
+            // Other Aid
+            if (!faOtherAid.value) return disableFASubmit();
+            if (faOtherAid.value === 'Yes') {
+                faOtherAidFollowup.style.display = 'block';
+                if (!faOtherAidAmount.value) return disableFASubmit();
+            } else {
+                faOtherAidFollowup.style.display = 'none';
+            }
+
+
+            // If we reach here, all required fields are filled
+            faTableSection.style.display = 'block';
+            calculateFATotal();
+            faSubmitBtn.disabled = false;
+            faSubmitBtn.style.backgroundColor = "#28a745";
+        }
+
+
+        function disableFASubmit() {
+            faTableSection.style.display = 'none';
+            faSubmitBtn.disabled = true;
+            faSubmitBtn.style.backgroundColor = "#cccccc";
+        }
+
+
+        function calculateFATotal() {
+            let total = 0;
+            const amounts = faTableSection.querySelectorAll('.fa-amount');
+            amounts.forEach(cell => {
+                const val = parseInt(cell.textContent.replace(/\D/g, ''), 10);
+                total += val;
+            });
+            faTotalCell.textContent = `$${total.toLocaleString()}`;
+        }
+
+
+        // Tuition Module Logic
+        const degreeLevel = document.getElementById('degree-level');
+        const fullTime = document.getElementById('full-time');
+        const partTimeSection = document.getElementById('part-time-credits-section');
+        const creditOption = document.getElementById('credit-option');
+        const enterValueSection = document.getElementById('enter-value-section');
+        const calculateCreditsSection = document.getElementById('calculate-credits-section');
+        const exactCredits = document.getElementById('exact-credits');
+        const numClasses = document.getElementById('num-classes');
+        const creditsPerClass = document.getElementById('credits-per-class');
+        const outOfState = document.getElementById('out-of-state');
+        const liveOnCampus = document.getElementById('live-on-campus');
+        const healthInsurance = document.getElementById('health-insurance');
+        const healthInsuranceNote = document.getElementById('health-insurance-note');
+        const mealPlanChoice = document.getElementById('meal-plan-choice');
+        const tuitionEstimateTable = document.getElementById('tuition-estimate-table');
+        const tuitionSubmitBtn = document.getElementById('tuition-submit-btn');
+        const tuitionTable = document.getElementById('tuition-table');
+        const tuitionTotalCell = document.getElementById('tuition-total');
+
+
+        [degreeLevel, fullTime, creditOption, outOfState, liveOnCampus, healthInsurance, mealPlanChoice].forEach(el => {
+            el.addEventListener('change', checkTuitionFormCompletion);
+        });
+        [exactCredits, numClasses, creditsPerClass].forEach(el => {
+            el.addEventListener('input', checkTuitionFormCompletion);
+        });
+
+
+        fullTime.addEventListener('change', () => {
+            if (fullTime.value === 'No') {
+                partTimeSection.style.display = 'block';
+            } else {
+                partTimeSection.style.display = 'none';
+            }
+            checkTuitionFormCompletion();
+        });
+
+
+        creditOption.addEventListener('change', () => {
+            if (creditOption.value === 'enter-value') {
+                enterValueSection.style.display = 'block';
+                calculateCreditsSection.style.display = 'none';
+            } else if (creditOption.value === 'calculate-credits') {
+                enterValueSection.style.display = 'none';
+                calculateCreditsSection.style.display = 'block';
+            } else {
+                enterValueSection.style.display = 'none';
+                calculateCreditsSection.style.display = 'none';
+            }
+            checkTuitionFormCompletion();
+        });
+
+
+        healthInsurance.addEventListener('change', () => {
+            if (healthInsurance.value === 'Yes') {
+                healthInsuranceNote.textContent = "Remember to enroll!";
+            } else if (healthInsurance.value === 'No') {
+                healthInsuranceNote.textContent = "Remember to waive it!";
+            } else {
+                healthInsuranceNote.textContent = "";
+            }
+        });
+
+
+        function checkTuitionFormCompletion() {
+            if (!degreeLevel.value) return disableTuitionSubmit();
+            if (!fullTime.value) return disableTuitionSubmit();
+
+
+            if (fullTime.value === 'No') {
+                if (!creditOption.value) return disableTuitionSubmit();
+                if (creditOption.value === 'enter-value') {
+                    if (!exactCredits.value) return disableTuitionSubmit();
+                } else if (creditOption.value === 'calculate-credits') {
+                    if (!numClasses.value || !creditsPerClass.value) return disableTuitionSubmit();
+                }
+            }
+
+
+            if (!outOfState.value) return disableTuitionSubmit();
+            if (!liveOnCampus.value) return disableTuitionSubmit();
+            if (!healthInsurance.value) return disableTuitionSubmit();
+            if (!mealPlanChoice.value) return disableTuitionSubmit();
+
+
+            // If all required fields are filled
+            tuitionEstimateTable.style.display = 'block';
+            calculateTuitionTotal();
+            tuitionSubmitBtn.disabled = false;
+            tuitionSubmitBtn.style.backgroundColor = "#28a745";
+        }
+
+
+        function disableTuitionSubmit() {
+            tuitionEstimateTable.style.display = 'none';
+            tuitionSubmitBtn.disabled = true;
+            tuitionSubmitBtn.style.backgroundColor = "#cccccc";
+        }
+
+
+        function startTuitionModule() {
+            showPanel('panel-tuition-module');
+        }
+
+
+        document.getElementById('tuition-module-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            calculateTuitionTotal();
+            tuitionStatus.innerText = "(Done)";
+            tuitionEditBtn.disabled = false;
+            tuitionTotalDisplay.textContent = `Estimated Total: ${tuitionTotalCell.textContent}`;
+            checkAllModulesCompleted();
+            showPanel('panel-estimate');
+        });
+
+
+        function calculateTuitionTotal() {
+            let total = 0;
+            const amounts = tuitionTable.querySelectorAll('.amount');
+            amounts.forEach(cell => {
+                const val = parseInt(cell.textContent.replace(/\D/g, ''), 10);
+                total += val;
+            });
+            tuitionTotalCell.textContent = `$${total.toLocaleString()}`;
+        }
+
+
+    </script>
+
+
+</body>
+</html>
+
+
