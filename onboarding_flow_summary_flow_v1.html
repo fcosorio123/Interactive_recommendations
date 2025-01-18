@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>College Financial Planner - More Red, Sidebar Removed in Final Plan</title>
+
+  <!-- 
+    ============================================================
+    1. Basic Links to CSS and Libraries
+    ============================================================
+  -->
+  <!-- Font Awesome (for icons) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    integrity="sha512-HjsNh1Kx00pH/3kK6JT2j1QMVnvX3Gbh3QD12TLoMYTIlS1hDCLa++RqFa02hN5FH5ordyJFdYIsF1RcJlBB2Q=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- Chart.js (CDN) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"
+    integrity="sha256-KU8nYhSc+5ww+AcY/PFDPzyoPSsyx4bTMLuT8u3JGvY="
+    crossorigin="anonymous">
+  </script>
+
+  <!-- 
+    ============================================================
+    2. Inline CSS for Layout & Styling
+    ============================================================
+    * Main color: #B22222 (FireBrick)
+    * Sidebar is removed entirely in final plan
+    * Positive/negative balance labels + plus sign
+  -->
+  <style>
+    /* Basic Reset & Font */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background-color: #f9f9f9;
+      display: flex;
+      min-height: 100vh;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+    }
+
+    /* ========= MAIN CONTENT (Left) ========== */
+    .main {
+      width: 70%;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    /* Progress Steps (Modules) */
+    .progress-bar-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .progress-step {
+      width: 30px;
+      height: 30px;
+      background-color: #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      position: relative;
+      z-index: 1;
+      transition: background-color 0.3s ease;
+    }
+    .progress-step.active {
+      background-color: #B22222; /* FireBrick Red */
+    }
+    .progress-line {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      right: 15px;
+      height: 2px;
+      background-color: #ccc;
+      z-index: 0;
+    }
+
+    .module-header {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      color: #B22222;
+    }
+    .personalized-greeting {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+      color: #555;
+    }
+
+    .module {
+      background-color: #ffffff;
+      margin: 0 auto 1.5rem auto;
+      padding: 1rem;
+      width: 80%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      animation: fadeInSlide 0.5s ease;
+    }
+    @keyframes fadeInSlide {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .module:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .module h2 {
+      margin-bottom: 0.5rem;
+      color: #B22222;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .module p {
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    .module select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+      background-color: #fff;
+      font-size: 1rem;
+    }
+
+    .button-row {
+      text-align: center;
+      margin: 1rem 0;
+    }
+    button {
+      background-color: #B22222; /* FireBrick */
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 0.5rem;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+      background-color: #7e1717; /* darker red */
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .validation-error {
+      color: #cc0000;
+      font-size: 0.9rem;
+      margin: -0.5rem 0 0.8rem 0;
+    }
+
+    /* ========= SIDEBAR (Right) ========== */
+    .sidebar {
+      width: 30%;
+      background-color: #ffffff;
+      border-left: 2px solid #ccc;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s ease;
+    }
+    .sidebar:hover {
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.15);
+    }
+    .balance-section {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .balance-section h2 {
+      margin-bottom: 0.5rem;
+      color: #B22222;
+    }
+    .balance-amount {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    /* Surplus/Deficit label below balance */
+    .balance-label {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .surplus-text {
+      color: green;
+    }
+    .deficit-text {
+      color: red;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 1rem;
+      color: #B22222;
+      font-size: 1.2rem;
+    }
+    #feedContainer {
+      display: flex;
+      flex-direction: column-reverse; /* newest feedback at top */
+    }
+
+    /* Spinner-based feedback */
+    .loader {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      border: 4px solid #B22222;
+      border-top: 4px solid #ccc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loader-text {
+      text-align: center;
+      color: #555;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    .feedItem {
+      background-color: #f5f9ff;
+      margin-bottom: 1.5rem;
+      padding: 0.8rem;
+      border-radius: 5px;
+      border: 1px solid #dce9ff;
+      animation: fadeInPop 0.4s ease;
+    }
+    @keyframes fadeInPop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .feedItem p {
+      margin-bottom: 0.3rem;
+      line-height: 1.4;
+    }
+    .feedItem strong {
+      color: #B22222;
+    }
+
+    /* Hidden feed on final summary */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Loader bar for final summary (Module 6) */
+    .plan-loader-wrapper {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .loader-bar-outer {
+      width: 80%;
+      max-width: 400px;
+      margin: 0 auto;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .loader-bar-inner {
+      height: 100%;
+      background-color: #B22222;
+      width: 0%;
+      transition: width 4s linear;
+    }
+
+    /* Plan Sections */
+    .plan-section {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    .plan-section h3 {
+      margin-bottom: 1rem;
+      color: #B22222;
+    }
+    .plan-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    .plan-table th, .plan-table td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    .plan-table th {
+      background-color: #f2f2f2;
+    }
+
+    /* CTA-only checklist (no checkboxes) */
+    .checklist-module {
+      margin-bottom: 1.5rem;
+    }
+    .checklist-module h4 {
+      color: #7e1717; /* darker red for subheadings */
+      margin-bottom: 0.5rem;
+    }
+    .checklist {
+      margin-left: 1.5rem;
+      list-style: disc;
+    }
+    .checklist li {
+      margin-bottom: 0.5rem;
+    }
+    .checklist button {
+      margin-left: 1rem;
+      background-color: #28a745;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.6rem;
+    }
+    .checklist button:hover {
+      background-color: #218838;
+    }
+
+    /* Chart.js container */
+    #chartjsContainer {
+      width: 100%;
+      height: 400px;
+      margin: 1rem auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 
+      ============================================================
+      MAIN CONTENT (LEFT) 
+      ============================================================
+    -->
+    <div class="main">
+      <!-- Progress Bar -->
+      <div class="progress-bar-container">
+        <div class="progress-line"></div>
+        <div id="step1" class="progress-step">1</div>
+        <div id="step2" class="progress-step">2</div>
+        <div id="step3" class="progress-step">3</div>
+        <div id="step4" class="progress-step">4</div>
+        <div id="step5" class="progress-step">5</div>
+        <div id="step6" class="progress-step">6</div>
+      </div>
+      <div class="module-header" id="moduleIndicator">Module 0 of 5</div>
+      <div class="personalized-greeting" id="greeting"></div>
+
+      <!-- 
+        MODULE 0: NAME INPUT
+      -->
+      <div id="module0" class="module">
+        <h2><i class="fas fa-user"></i> Welcome!</h2>
+        <p>Please enter your name to personalize your experience:</p>
+        <input
+          type="text"
+          id="userName"
+          style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #aaa;"
+          placeholder="e.g., Alex, Jordan, Taylor"
+        >
+        <div class="validation-error" id="nameError" style="display: none;">
+          Please enter your name to continue.
+        </div>
+        <div class="button-row">
+          <button onclick="startModules()">Start Planning &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 1: FUNDING
+      -->
+      <div id="module1" class="module hidden">
+        <h2><i class="fas fa-money-bill-wave"></i> Funding Sources</h2>
+        <select id="module1Select">
+          <option value="">-- Select an option --</option>
+          <option value="scholarship">Scholarships/Grants (+$4,000)</option>
+          <option value="part_time_job">Part-Time Job (+$2,000)</option>
+          <option value="family_support">Family Support (+$1,000)</option>
+          <option value="student_loans">Student Loans (+$5,000)</option>
+          <option value="none">No Additional Funding (+$0)</option>
+        </select>
+        <div class="validation-error" id="error1" style="display: none;">
+          Please select a funding source.
+        </div>
+        <div class="button-row">
+          <button onclick="handleNext(1)">Next &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 2: HOUSING
+      -->
+      <div id="module2" class="module hidden">
+        <h2><i class="fas fa-home"></i> Housing</h2>
+        <select id="module2Select">
+          <option value="">-- Select an option --</option>
+          <option value="campus">On-Campus Dorm (-$3,000)</option>
+          <option value="off_campus">Off-Campus Apartment (-$2,000)</option>
+          <option value="parents">Living with Parents (-$0)</option>
+        </select>
+        <div class="validation-error" id="error2" style="display: none;">
+          Please select a housing option.
+        </div>
+        <div class="button-row">
+          <button onclick="goToPreviousModule()">&laquo; Previous</button>
+          <button onclick="handleNext(2)">Next &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 3: MEAL PLANS
+      -->
+      <div id="module3" class="module hidden">
+        <h2><i class="fas fa-utensils"></i> Meal Plans</h2>
+        <select id="module3Select">
+          <option value="">-- Select an option --</option>
+          <option value="full_meal">Full Meal Plan (-$2,500)</option>
+          <option value="partial_meal">Partial Meal Plan (-$1,500)</option>
+          <option value="no_meal">No Meal Plan (-$0)</option>
+        </select>
+        <div class="validation-error" id="error3" style="display: none;">
+          Please select a meal plan option.
+        </div>
+        <div class="button-row">
+          <button onclick="goToPreviousModule()">&laquo; Previous</button>
+          <button onclick="handleNext(3)">Next &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 4: TEXTBOOKS
+      -->
+      <div id="module4" class="module hidden">
+        <h2><i class="fas fa-book"></i> Textbooks</h2>
+        <select id="module4Select">
+          <option value="">-- Select an option --</option>
+          <option value="buy_new">Buy New (-$600)</option>
+          <option value="buy_used">Buy Used (-$300)</option>
+          <option value="rent">Rent (-$100)</option>
+          <option value="pdf">Download PDFs (Free)</option>
+        </select>
+        <div class="validation-error" id="error4" style="display: none;">
+          Please select a textbook option.
+        </div>
+        <div class="button-row">
+          <button onclick="goToPreviousModule()">&laquo; Previous</button>
+          <button onclick="handleNext(4)">Next &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 5: TRANSPORTATION
+      -->
+      <div id="module5" class="module hidden">
+        <h2><i class="fas fa-bus"></i> Transportation & Fees</h2>
+        <select id="module5Select">
+          <option value="">-- Select an option --</option>
+          <option value="car_insurance">Car & Insurance (-$1,500)</option>
+          <option value="public_transport">Public Transport Pass (-$200)</option>
+          <option value="bike_walk">Bike/Walk (Free)</option>
+          <option value="online_only">Online Classes Only (Minimal Fees) (-$50)</option>
+        </select>
+        <div class="validation-error" id="error5" style="display: none;">
+          Please select a commuting option.
+        </div>
+        <div class="button-row">
+          <button onclick="goToPreviousModule()">&laquo; Previous</button>
+          <button onclick="handleNext(5)">Next &raquo;</button>
+        </div>
+      </div>
+
+      <!-- 
+        MODULE 6: FINAL PLAN
+      -->
+      <div id="module6" class="module hidden">
+        <div id="comprehensivePlanLoader" class="plan-loader-wrapper">
+          <p class="loader-text">Preparing your comprehensive plan... Please wait</p>
+          <div class="loader-bar-outer">
+            <div class="loader-bar-inner" id="planLoaderBar"></div>
+          </div>
+        </div>
+        <div id="comprehensivePlanContent" class="hidden">
+
+          <h2><i class="fas fa-file-alt"></i> Your Comprehensive Plan</h2>
+          <p id="summaryIntro"></p>
+
+          <!-- 
+            1. We place the final balance FIRST, 
+               so the user sees it immediately 
+          -->
+          <div id="planBalance" class="plan-section">
+            <h3>Remaining Balance</h3>
+            <p><strong>Total:</strong> <span id="finalBalance">$0</span></p>
+            <p id="finalBalanceLabel" class="balance-label"></p>
+          </div>
+
+          <!-- Section A: Income vs. Expenses -->
+          <div id="planIncomeExpenses" class="plan-section">
+            <h3>Section A: Income vs. Expenses</h3>
+          </div>
+          <!-- Section B: Observations & Diagnoses -->
+          <div id="planObservations" class="plan-section">
+            <h3>Section B: Observations & Diagnoses</h3>
+          </div>
+          <!-- Section C: Global Summary -->
+          <div id="planGlobalSummary" class="plan-section">
+            <h3>Section C: Global Summary</h3>
+          </div>
+          <!-- Section D: Actionable Checklist -->
+          <div id="planChecklist" class="plan-section">
+            <h3>Section D: Actionable Checklist</h3>
+          </div>
+          <!-- Section E: Additional Resources -->
+          <div id="planResources" class="plan-section">
+            <h3>Section E: Additional Resources</h3>
+          </div>
+          <!-- Section F: What-If Scenarios -->
+          <div id="planWhatIfScenarios" class="plan-section">
+            <h3>Section F: What-If Scenarios</h3>
+          </div>
+          <!-- Section G: Spending Chart -->
+          <div id="planChart" class="plan-section">
+            <h3>Section G: Spending Chart</h3>
+            <canvas id="chartjsContainer"></canvas>
+          </div>
+
+          <div class="button-row">
+            <button onclick="downloadPlan()">Download / Print Plan</button>
+            <button onclick="downloadPlan()">Share</button>
+            <button onclick="closeSummary()">Close</button>
+          </div>
+        </div>
+      </div><!-- end module6 -->
+
+    </div><!-- end .main -->
+
+    <!-- 
+      ============================================================
+      SIDEBAR (RIGHT)
+      (Removed entirely on final plan)
+      ============================================================
+    -->
+    <div class="sidebar" id="sidebarDiv">
+      <div class="balance-section">
+        <h2>Remaining Balance</h2>
+        <div class="balance-amount" id="balanceAmount">$0</div>
+        <div id="balanceLabel" class="balance-label"></div>
+      </div>
+      <h2 id="recHeading">Feedback</h2>
+      <div id="feedContainer"></div>
+    </div><!-- end .sidebar -->
+  </div><!-- end .container -->
+
+  <!-- 
+    ============================================================
+    MAIN SCRIPTS
+    ============================================================
+  -->
+  <script>
+    let remainingBalance = 0;
+    let userName = "";
+
+    const financeData = {
+      module1: {
+        scholarship: {
+          cost: +4000,
+          observation: "You receive $4,000 in scholarship funding.",
+          diagnosis: "Reduces tuition costs but might require GPA.",
+          recommendation: "Track deadlines & maintain GPA."
+        },
+        part_time_job: {
+          cost: +2000,
+          observation: "Part-time job adds $2,000 to your funds.",
+          diagnosis: "Time management needed for work + classes.",
+          recommendation: "Schedule carefully to maintain performance."
+        },
+        family_support: {
+          cost: +1000,
+          observation: "Family is supporting you with $1,000.",
+          diagnosis: "Helpful but might come with family expectations.",
+          recommendation: "Communicate openly about finances."
+        },
+        student_loans: {
+          cost: +5000,
+          observation: "Student loans add $5,000 in funds.",
+          diagnosis: "Increases debt after graduation.",
+          recommendation: "Consider paying interest sooner if possible."
+        },
+        none: {
+          cost: 0,
+          observation: "No additional funding source.",
+          diagnosis: "Relying on existing savings or future income.",
+          recommendation: "Explore scholarships or part-time job."
+        }
+      },
+      module2: {
+        campus: {
+          cost: -3000,
+          observation: "On-campus dorm costs $3,000.",
+          diagnosis: "Convenient but can be pricey.",
+          recommendation: "Check if a meal plan is mandatory."
+        },
+        off_campus: {
+          cost: -2000,
+          observation: "Off-campus apartment costs ~$2,000.",
+          diagnosis: "Cheaper but factor in utilities & commute.",
+          recommendation: "Create a budget for rent & transport."
+        },
+        parents: {
+          cost: 0,
+          observation: "Living with parents, no housing cost.",
+          diagnosis: "Saves money but consider commute time.",
+          recommendation: "Direct those savings to other needs."
+        }
+      },
+      module3: {
+        full_meal: {
+          cost: -2500,
+          observation: "Full meal plan ~$2,500.",
+          diagnosis: "Convenient but can be expensive if underused.",
+          recommendation: "Track usage; partial plan if leftover swipes."
+        },
+        partial_meal: {
+          cost: -1500,
+          observation: "Partial meal plan ~$1,500.",
+          diagnosis: "Cheaper but need groceries for other meals.",
+          recommendation: "Budget for groceries or occasional dining out."
+        },
+        no_meal: {
+          cost: 0,
+          observation: "No meal plan chosen.",
+          diagnosis: "All meals on you; costs vary.",
+          recommendation: "Meal-prep or shop deals to save money."
+        }
+      },
+      module4: {
+        buy_new: {
+          cost: -600,
+          observation: "New textbooks cost $600 total.",
+          diagnosis: "Guaranteed correct editions but pricier.",
+          recommendation: "Resell or try used next semester."
+        },
+        buy_used: {
+          cost: -300,
+          observation: "Used textbooks ~$300 total.",
+          diagnosis: "Cheaper; verify correct editions.",
+          recommendation: "Sell/donate after semester."
+        },
+        rent: {
+          cost: -100,
+          observation: "Renting textbooks ~$100 total.",
+          diagnosis: "Lowest cost; mindful of return deadlines.",
+          recommendation: "Avoid late fees by timely returns."
+        },
+        pdf: {
+          cost: 0,
+          observation: "Using free PDFs for textbooks.",
+          diagnosis: "No cost; ensure they're legit & up-to-date.",
+          recommendation: "Check if classes require physical copies/codes."
+        }
+      },
+      module5: {
+        car_insurance: {
+          cost: -1500,
+          observation: "Car & insurance total ~$1,500.",
+          diagnosis: "Convenient but consider gas & repairs.",
+          recommendation: "Budget for maintenance; maybe carpool."
+        },
+        public_transport: {
+          cost: -200,
+          observation: "Public transport pass ~$200.",
+          diagnosis: "Affordable but route/schedule dependent.",
+          recommendation: "Check pass validity & route availability."
+        },
+        bike_walk: {
+          cost: 0,
+          observation: "Biking or walking is free.",
+          diagnosis: "Healthy & cheap, but weather issues.",
+          recommendation: "Have a backup plan for bad weather."
+        },
+        online_only: {
+          cost: -50,
+          observation: "Online classes, minimal fees ~$50.",
+          diagnosis: "No commute but requires discipline.",
+          recommendation: "Maintain a structured schedule & net."
+        }
+      }
+    };
+
+    const userSelections = {
+      module1: "",
+      module2: "",
+      module3: "",
+      module4: "",
+      module5: ""
+    };
+    const userFeedback = {
+      module1: { observation: "", diagnosis: "", recommendation: "" },
+      module2: { observation: "", diagnosis: "", recommendation: "" },
+      module3: { observation: "", diagnosis: "", recommendation: "" },
+      module4: { observation: "", diagnosis: "", recommendation: "" },
+      module5: { observation: "", diagnosis: "", recommendation: "" }
+    };
+
+    // Chart.js data
+    let chartData = [];
+    let myChartInstance = null;
+
+    let currentModule = 0;
+    const totalModules = 5;
+
+    /*****************************************************
+     * showModule
+     *****************************************************/
+    function showModule(moduleNumber) {
+      for (let i = 0; i <= 6; i++) {
+        const mod = document.getElementById(`module${i}`);
+        if (mod) {
+          mod.classList.add('hidden');
+        }
+      }
+      document.getElementById(`module${moduleNumber}`).classList.remove('hidden');
+      currentModule = moduleNumber;
+
+      updateModuleIndicator();
+      updateProgressBar(currentModule);
+
+      // If final plan, remove sidebar
+      if (currentModule === 6) {
+        const sidebarEl = document.getElementById('sidebarDiv');
+        if (sidebarEl) {
+          sidebarEl.remove(); 
+        }
+      } else {
+        toggleFeedVisibility(false);
+      }
+    }
+
+    /*****************************************************
+     * updateModuleIndicator & updateProgressBar
+     *****************************************************/
+    function updateModuleIndicator() {
+      const indicator = document.getElementById('moduleIndicator');
+      if (currentModule === 0) {
+        indicator.textContent = "Introduction";
+      } else if (currentModule <= 5) {
+        indicator.textContent = `Module ${currentModule} of 5`;
+      } else {
+        indicator.textContent = "Comprehensive Plan";
+      }
+    }
+    function updateProgressBar(activeModule) {
+      for (let i = 1; i <= 6; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (!step) continue;
+        step.classList.toggle('active', (activeModule !== 0 && i <= activeModule));
+      }
+    }
+
+    /*****************************************************
+     * toggleFeedVisibility
+     *****************************************************/
+    function toggleFeedVisibility(isSummary) {
+      const recHeading = document.getElementById('recHeading');
+      const feedContainer = document.getElementById('feedContainer');
+      if (!recHeading || !feedContainer) return;
+      if (isSummary) {
+        recHeading.classList.add('hidden');
+        feedContainer.classList.add('hidden');
+      } else {
+        recHeading.classList.remove('hidden');
+        feedContainer.classList.remove('hidden');
+      }
+    }
+
+    /*****************************************************
+     * Start Modules (module0 -> module1)
+     *****************************************************/
+    function startModules() {
+      const nameInput = document.getElementById('userName');
+      const nameError = document.getElementById('nameError');
+      userName = nameInput.value.trim();
+      if (!userName) {
+        nameError.style.display = "block";
+        return;
+      }
+      nameError.style.display = "none";
+
+      document.getElementById('greeting').textContent =
+        `Hello, ${userName}! Please follow the steps below.`;
+      showModule(1);
+    }
+
+    /*****************************************************
+     * 2. Next / Prev
+     *****************************************************/
+    function goToNextModule() {
+      if (currentModule < totalModules) {
+        showModule(currentModule + 1);
+      }
+    }
+    function goToPreviousModule() {
+      if (currentModule > 0) {
+        showModule(currentModule - 1);
+      }
+    }
+
+    /*****************************************************
+     * 3. Handling the Next (with spinner)
+     *****************************************************/
+    function handleNext(moduleNum) {
+      const success = addSpinnerFeedback(moduleNum);
+      if (!success) return;
+
+      if (moduleNum < totalModules) {
+        showModule(moduleNum + 1);
+      } else if (moduleNum === totalModules) {
+        showPlanLoaderThenBuild();
+      }
+    }
+
+    function addSpinnerFeedback(moduleNum) {
+      const select = document.getElementById(`module${moduleNum}Select`);
+      const errorDiv = document.getElementById(`error${moduleNum}`);
+      const selectedValue = select.value;
+
+      if (!selectedValue) {
+        errorDiv.style.display = "block";
+        return false;
+      }
+      errorDiv.style.display = "none";
+
+      const { cost, observation, diagnosis, recommendation } =
+        financeData[`module${moduleNum}`][selectedValue];
+
+      userSelections[`module${moduleNum}`] = selectedValue;
+      userFeedback[`module${moduleNum}`] = { observation, diagnosis, recommendation };
+
+      remainingBalance += cost;
+      updateRemainingBalanceUI();
+
+      // spinner in sidebar
+      const feedContainer = document.getElementById('feedContainer');
+      if (feedContainer) {
+        const loaderItem = document.createElement('div');
+        loaderItem.classList.add('feedItem');
+        loaderItem.innerHTML = `
+          <div class="loader"></div>
+          <div class="loader-text">Generating your feedback...</div>
+        `;
+        feedContainer.prepend(loaderItem);
+
+        setTimeout(() => {
+          loaderItem.remove();
+          const finalItem = document.createElement('div');
+          finalItem.classList.add('feedItem');
+          finalItem.innerHTML = `
+            <p><strong>Module ${moduleNum}</strong></p>
+            <p><em>Observation:</em> ${observation}</p>
+            <p><em>Diagnosis:</em> ${diagnosis}</p>
+            <p><em>Recommendation:</em> ${recommendation}</p>
+          `;
+          feedContainer.prepend(finalItem);
+        }, 4000);
+      }
+
+      return true;
+    }
+
+    /*****************************************************
+     * 4. Update Remaining Balance in the Sidebar
+     *    - add plus sign for positive
+     *    - Surplus/Deficit label
+     *****************************************************/
+    function updateRemainingBalanceUI() {
+      const balEl = document.getElementById('balanceAmount');
+      const lblEl = document.getElementById('balanceLabel');
+      if (!balEl || !lblEl) return;
+
+      if (remainingBalance > 0) {
+        balEl.textContent = `+${remainingBalance.toLocaleString()}`;
+        lblEl.textContent = "Surplus";
+        lblEl.classList.add('surplus-text');
+        lblEl.classList.remove('deficit-text');
+      } else if (remainingBalance < 0) {
+        // We already store negative, but let's ensure format
+        const absVal = Math.abs(remainingBalance).toLocaleString();
+        balEl.textContent = `-${absVal}`;
+        lblEl.textContent = "Deficit";
+        lblEl.classList.add('deficit-text');
+        lblEl.classList.remove('surplus-text');
+      } else {
+        // zero
+        balEl.textContent = "0";
+        lblEl.textContent = "";
+        lblEl.classList.remove('surplus-text', 'deficit-text');
+      }
+    }
+
+    /*****************************************************
+     * 5. Show Plan Loader Then Build
+     *****************************************************/
+    function showPlanLoaderThenBuild() {
+      showModule(6);
+      const loaderBar = document.getElementById('planLoaderBar');
+      loaderBar.style.width = '0%';
+      requestAnimationFrame(() => {
+        loaderBar.style.width = '100%';
+      });
+
+      setTimeout(() => {
+        document.getElementById('comprehensivePlanLoader').style.display = 'none';
+        document.getElementById('comprehensivePlanContent').classList.remove('hidden');
+        buildComprehensivePlan();
+      }, 4000);
+    }
+
+    /*****************************************************
+     * 6. Build Comprehensive Plan
+     *****************************************************/
+    function buildComprehensivePlan() {
+      const sumIntro = document.getElementById('summaryIntro');
+      sumIntro.textContent = `${userName}, here is your comprehensive plan:`;
+
+      buildIncomeExpensesSection();
+      buildObservationsSection();
+      buildGlobalSummary();
+      buildChecklistSection();
+      buildResourcesSection();
+      buildWhatIfScenariosSection();
+
+      // final balance area
+      const finalBalanceEl = document.getElementById('finalBalance');
+      const finalBalLabel = document.getElementById('finalBalanceLabel');
+
+      // Format the final balance with plus sign if > 0
+      if (remainingBalance > 0) {
+        finalBalanceEl.textContent = `+${remainingBalance.toLocaleString()}`;
+        finalBalLabel.textContent = "Surplus";
+        finalBalLabel.style.color = "green";
+      } else if (remainingBalance < 0) {
+        const absVal = Math.abs(remainingBalance).toLocaleString();
+        finalBalanceEl.textContent = `-${absVal}`;
+        finalBalLabel.textContent = "Deficit";
+        finalBalLabel.style.color = "red";
+      } else {
+        finalBalanceEl.textContent = "0";
+        finalBalLabel.textContent = "";
+      }
+
+      setTimeout(() => { buildChartJS(); }, 50);
+    }
+
+    /* 
+      SECTION A: Income vs. Expenses
+      (modules 1..5)
+    */
+    function buildIncomeExpensesSection() {
+      const container = document.getElementById('planIncomeExpenses');
+      if (!container) return;
+
+      chartData = [];
+      let incomeItems = [];
+      let expenseItems = [];
+
+      for (let i = 1; i <= 5; i++) {
+        const choice = userSelections[`module${i}`];
+        const { cost } = financeData[`module${i}`][choice];
+        if (cost > 0) {
+          incomeItems.push({ module: i, amount: cost });
+          chartData.push({ name: `Income (M${i})`, value: cost });
+        } else if (cost < 0) {
+          const absCost = Math.abs(cost);
+          expenseItems.push({ module: i, amount: absCost });
+          chartData.push({ name: `Expense (M${i})`, value: absCost });
+        }
+      }
+
+      let html = `
+        <table class="plan-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Module</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      incomeItems.forEach(item => {
+        html += `
+          <tr>
+            <td>Income</td>
+            <td>Module ${item.module}</td>
+            <td>+$${item.amount.toLocaleString()}</td>
+          </tr>
+        `;
+      });
+      expenseItems.forEach(item => {
+        html += `
+          <tr>
+            <td>Expense</td>
+            <td>Module ${item.module}</td>
+            <td>-$${item.amount.toLocaleString()}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+
+      container.innerHTML += html;
+    }
+
+    /* 
+      SECTION B: Observations & Diagnoses 
+      (modules 1..5)
+    */
+    function buildObservationsSection() {
+      const container = document.getElementById('planObservations');
+      if (!container) return;
+
+      let html = `<ul style="margin-left:1.2rem; list-style:disc;">`;
+      for (let i = 1; i <= 5; i++) {
+        const { observation, diagnosis, recommendation } = userFeedback[`module${i}`];
+        html += `
+          <li style="margin-bottom:1rem;">
+            <strong>Module ${i}</strong><br>
+            <em>Observation:</em> ${observation}<br>
+            <em>Diagnosis:</em> ${diagnosis}<br>
+            <em>Recommendation:</em> ${recommendation}
+          </li>
+        `;
+      }
+      html += `</ul>`;
+      container.innerHTML += html;
+    }
+
+    /* 
+      SECTION C: Global Summary
+      (modules 1..5 only)
+    */
+    function buildGlobalSummary() {
+      const container = document.getElementById('planGlobalSummary');
+      if (!container) return;
+
+      let netTotal = 0;
+      for (let i = 1; i <= 5; i++) {
+        const choice = userSelections[`module${i}`];
+        netTotal += financeData[`module${i}`][choice].cost;
+      }
+
+      let obs, diag, rec;
+      if (netTotal > 0) {
+        obs = "You have a positive net balance overall.";
+        diag = "Your income is higher than your expenses.";
+        rec = "Consider saving or investing the surplus.";
+      } else if (netTotal < 0) {
+        obs = "You have a negative net balance overall.";
+        diag = "Your expenses surpass your available funds.";
+        rec = "Find ways to increase income or reduce expenses.";
+      } else {
+        obs = "You're exactly at break-even.";
+        diag = "Expenses match your income perfectly.";
+        rec = "Maintain a small buffer if possible.";
+      }
+
+      container.innerHTML += `
+        <p><strong>Observation:</strong> ${obs}</p>
+        <p><strong>Diagnosis:</strong> ${diag}</p>
+        <p><strong>Recommendation:</strong> ${rec}</p>
+      `;
+    }
+
+    /* 
+      SECTION D: Actionable Checklist
+      (modules 1..5)
+    */
+    const moduleChecklists = {
+      module1: [
+        { text: "Apply for more scholarships", link: "#", cta: "Apply" }
+      ],
+      module2: [
+        { text: "Compare dorm vs. apartment details", link: "#", cta: "Compare" }
+      ],
+      module3: [
+        { text: "Review partial meal plan usage", link: "#", cta: "Review" }
+      ],
+      module4: [
+        { text: "Browse used/rental deals online", link: "#", cta: "Browse" }
+      ],
+      module5: [
+        { text: "Explore carpool or rideshare options", link: "#", cta: "View" }
+      ]
+    };
+
+    function buildChecklistSection() {
+      const container = document.getElementById('planChecklist');
+      if (!container) return;
+
+      let html = "";
+      for (let i = 1; i <= 5; i++) {
+        const tasks = moduleChecklists[`module${i}`];
+        if (tasks) {
+          html += `<div class="checklist-module"><h4>Module ${i} Tasks</h4>`;
+          html += `<ul class="checklist">`; 
+          tasks.forEach(item => {
+            html += `
+              <li>
+                ${item.text}
+                <button onclick="window.open('${item.link}', '_blank')">
+                  ${item.cta}
+                </button>
+              </li>
+            `;
+          });
+          html += `</ul></div>`;
+        }
+      }
+      container.innerHTML += html;
+    }
+
+    /* 
+      SECTION E: Additional Resources
+    */
+    function buildResourcesSection() {
+      const container = document.getElementById('planResources');
+      if (!container) return;
+
+      container.innerHTML += `
+        <ul style="margin-left:1.5rem; list-style:square;">
+          <li><a href="#" target="_blank">Financial Aid Office</a></li>
+          <li><a href="#" target="_blank">Dining Services & Meal Plans</a></li>
+          <li><a href="#" target="_blank">Housing Portal</a></li>
+          <li><a href="#" target="_blank">Transportation & Parking Info</a></li>
+        </ul>
+      `;
+    }
+
+    /* 
+      SECTION F: What-If Scenarios (modules 1..5)
+    */
+    function buildWhatIfScenariosSection() {
+      const container = document.getElementById('planWhatIfScenarios');
+      if (!container) return;
+
+      let html = `<ul style="margin-left:1.2rem; list-style:disc;">`;
+      for (let i = 1; i <= 5; i++) {
+        const userChoice = userSelections[`module${i}`];
+        const userData = financeData[`module${i}`][userChoice];
+        const userCost = userData.cost;
+
+        let bestAltKey = null;
+        let bestSavings = 0;
+
+        for (const [key, altData] of Object.entries(financeData[`module${i}`])) {
+          if (key === userChoice) continue;
+          const diff = userCost - altData.cost;
+          if (diff > 0 && diff > bestSavings) {
+            bestSavings = diff;
+            bestAltKey = key;
+          }
+        }
+        if (bestAltKey) {
+          html += `
+            <li style="margin-bottom:1rem;">
+              <strong>Module ${i}:</strong><br/>
+              Switching from "<em>${userChoice}</em>" to "<em>${bestAltKey}</em>"
+              could <strong>save $${bestSavings}</strong>.
+            </li>
+          `;
+        }
+      }
+      html += `</ul>`;
+      container.innerHTML += html;
+    }
+
+    /* 
+      SECTION G: Build Chart (Chart.js)
+    */
+    function buildChartJS() {
+      const ctx = document.getElementById('chartjsContainer');
+      if (!ctx) return;
+
+      if (myChartInstance) {
+        myChartInstance.destroy();
+      }
+
+      const labels = chartData.map(item => item.name);
+      const values = chartData.map(item => item.value);
+
+      // color palette with the first color = #B22222
+      const colorPalette = [
+        "#B22222", "#28a745", "#dc3545", "#ffc107", "#17a2b8",
+        "#6f42c1", "#fd7e14", "#20c997", "#6610f2", "#e83e8c"
+      ];
+      const backgroundColors = values.map((_, idx) =>
+        colorPalette[idx % colorPalette.length]
+      );
+
+      const chartCtx = ctx.getContext('2d');
+      myChartInstance = new Chart(chartCtx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Spending Breakdown',
+            data: values,
+            backgroundColor: backgroundColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (tooltipItem) {
+                  const dataLabel = labels[tooltipItem.dataIndex];
+                  const val = values[tooltipItem.dataIndex].toLocaleString();
+                  return `${dataLabel}: $${val}`;
+                }
+              }
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    /* 
+      Download / Print 
+    */
+    function downloadPlan() {
+      window.print();
+    }
+
+    /* 
+      Close & Reset
+    */
+    function closeSummary() {
+      alert("Thank you! Plan closed.");
+      location.reload();
+    }
+
+    /*****************************************************
+     * ON PAGE LOAD
+     *****************************************************/
+    showModule(0);
+    updateRemainingBalanceUI();
+  </script>
+</body>
+</html>
