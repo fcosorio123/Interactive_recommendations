@@ -53,6 +53,31 @@
     p {
       line-height: 1.6;
     }
+    /* Tabs for Act Section */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 15px;
+    }
+    .tab-button {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 1em;
+      color: #0077cc;
+      border-bottom: 3px solid transparent;
+    }
+    .tab-button.active {
+      border-bottom: 3px solid #0077cc;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
     /* Learn Section */
     .diagnosis,
     .observations,
@@ -96,7 +121,7 @@
       flex: 1;
       max-width: 30%;
     }
-    /* Additional Charts Container (2 side-by-side) */
+    /* Additional Charts (for Living Expenses and Funding Breakdown) */
     .additional-charts {
       display: flex;
       justify-content: space-around;
@@ -348,8 +373,8 @@
 <body>
   <!-- Header Section -->
   <header>
-    <h1>Sprint 2025 Financial Plan</h1>
-    <h3 title="Your remaining funds after all expenses">Remaining Balance: <span id="globalRemainingBalance">$-800</span></h3>
+    <h1 title="Your financial plan for this semester">Sprint 2025 Financial Plan</h1>
+    <h3 title="Your remaining funds after expenses">Remaining Balance: <span id="globalRemainingBalance">$-800</span></h3>
   </header>
 
   <!-- Learn Section -->
@@ -359,7 +384,7 @@
     <!-- Cumulative Diagnosis -->
     <div class="diagnosis">
       <h3 title="Summary of your overall financial health">Cumulative Diagnosis</h3>
-      <p id="diagnosisText" title="This text summarizes your current financial status based on your plan">
+      <p id="diagnosisText" title="This summarizes your current financial status based on your plan">
         Your financial health is moderate.
       </p>
       <!-- Financial Health Gauge (Half-Doughnut Gauge) -->
@@ -367,7 +392,7 @@
         <label for="healthGauge" title="Your current financial health score (out of 10)"><strong>Financial Health Score:</strong></label>
         <canvas id="healthGauge" title="Gauge showing 6/10"></canvas>
       </div>
-      <div class="risk-notes" title="Primary risk compares your direct funding vs. your direct expenses; Secondary risk includes all funding and costs">
+      <div class="risk-notes" title="Risk metrics: Primary compares direct funding vs. expenses; Secondary includes all funding and costs">
         <em>Primary Risk</em> (Direct Funding vs. Direct Expenses): 5/10&nbsp;&nbsp;|&nbsp;&nbsp;
         <em>Secondary Risk</em> (Overall including indirect items): 7/10
       </div>
@@ -401,7 +426,7 @@
           Direct Expenses (Tuition &amp; Fees): $2,000
         </div>
       </div>
-      <div class="data-item" title="Remaining Balance is calculated as Total Inflows minus Total Outflows">
+      <div class="data-item" title="Remaining Balance is computed as Total Inflows minus Total Outflows">
         <span>Remaining Balance: <strong id="remainingBalance2"></strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see calculation">&#x25B6;</span>
         <div class="sub-values">
@@ -441,7 +466,7 @@
         </div>
       </div>
       <!-- Additional Charts: Living Expenses and Funding Breakdown -->
-      <div class="charts-container additional-charts">
+      <div class="additional-charts">
         <!-- Chart 4: Living Expenses Breakdown (Pie Chart) -->
         <div class="chart-box">
           <canvas id="chartLivingExpenses" title="Breakdown of your living expenses"></canvas>
@@ -458,13 +483,13 @@
     <!-- Cumulative Recommendations (Grouped) -->
     <div class="recommendations">
       <h3 title="Steps to improve your financial outlook">Cumulative Recommendations</h3>
-      <h4 title="Actions to boost your funding">Increasing Inflows</h4>
+      <h4 title="Actions to boost your funding sources">Increasing Inflows</h4>
       <ul id="recommendationsInflows" title="Actions to increase your funding sources">
         <li>Apply for Pell Grant to potentially increase funding by $1,000—this will help flip a negative balance into positive territory and boost your Financial Health Score.</li>
         <li>Investigate additional scholarship opportunities to enhance your funding, thereby increasing your remaining balance and improving your Financial Health Score.</li>
       </ul>
       <h4 title="Actions to reduce your spending">Reducing Outflows</h4>
-      <ul id="recommendationsOutflows" title="Actions to cut your expenses">
+      <ul id="recommendationsOutflows" title="Actions to reduce your expenses">
         <li>Review tuition fee waiver options to reduce direct expenses by $500—this will directly improve your remaining balance and elevate your Financial Health Score.</li>
         <li>Optimize your living expenses budget to lower indirect costs, increasing net funds and boosting your Financial Health Score.</li>
         <li>Consult with a financial advisor for targeted cost reduction strategies to improve your remaining balance and overall Financial Health Score.</li>
@@ -472,17 +497,14 @@
     </div>
   </div>
 
-  <!-- Act Section -->
+  <!-- Act Section with Tabs -->
   <div class="container" id="act-section">
     <h2 class="section-title" title="Take action on your plan">Act</h2>
     
-    <!-- Sorting Controls -->
-    <div class="sort-controls" title="Sort your action items by impact/effort or urgency/effort">
-      <label for="sortSelect">Sort Action Items by:</label>
-      <select id="sortSelect" onchange="sortActions()" title="Select sorting method">
-        <option value="impact" title="Sort by Impact divided by Effort">Impact / Effort</option>
-        <option value="urgency" title="Sort by Urgency divided by Effort">Urgency / Effort</option>
-      </select>
+    <!-- Tabs Navigation -->
+    <div class="tabs" title="Switch between Actionable Items and Tasks">
+      <button class="tab-button active" data-tab="actionable">Actionable Items</button>
+      <button class="tab-button" data-tab="tasks">Tasks</button>
     </div>
     
     <!-- Global Action Items Progress Bar -->
@@ -490,9 +512,9 @@
       <div class="global-progress" id="globalProgress" style="width: 0%;"></div>
     </div>
     
-    <!-- Actionable Items -->
-    <div id="actionItems">
-      <h3 title="Tasks to improve your financial situation">Actionable Items</h3>
+    <!-- Tab Content: Actionable Items -->
+    <div id="actionable" class="tab-content active">
+      <h3 title="Tasks from your recommendations">Actionable Items</h3>
       <!-- Action Item Example 1 -->
       <div class="action-item" id="action1" data-impact="9" data-effort="2" data-urgency="8" title="Click to toggle progress">
         <h4>
@@ -503,7 +525,7 @@
           Securing this grant will increase your funding and improve your remaining balance and Financial Health Score by reducing the gap in your college bill.
         </p>
         <p>Due Date: <em>2025-02-28</em></p>
-        <button class="action-button" onclick="toggleAction('action1', 'resources1')" title="Mark task as in progress/complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action1', 'resources1')" title="Mark task as in progress or complete">Start</button>
         <!-- Embedded Resources for Action Item 1 -->
         <div class="resource-list" id="resources1">
           <h5>Related Resources</h5>
@@ -524,7 +546,7 @@
           Evaluating available tuition fee waiver options can significantly reduce your direct expenses—improving your remaining balance and boosting your Financial Health Score.
         </p>
         <p>Due Date: <em>2025-03-05</em></p>
-        <button class="action-button" onclick="toggleAction('action2', 'resources2')" title="Mark task as in progress/complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action2', 'resources2')" title="Mark task as in progress or complete">Start</button>
         <!-- Embedded Resources for Action Item 2 -->
         <div class="resource-list" id="resources2">
           <h5>Related Resources</h5>
@@ -545,7 +567,7 @@
           Research part-time jobs on campus or nearby to supplement your income—thereby improving both your remaining balance and Financial Health Score.
         </p>
         <p>Due Date: <em>2025-03-15</em></p>
-        <button class="action-button" onclick="toggleAction('action3', 'resources3')" title="Mark task as in progress/complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action3', 'resources3')" title="Mark task as in progress or complete">Start</button>
         <!-- Embedded Resources for Action Item 3 -->
         <div class="resource-list" id="resources3">
           <h5>Related Resources</h5>
@@ -557,30 +579,72 @@
       </div>
     </div>
     
-    <!-- Ask Rooty Chatbot with Tree Mascot -->
-    <div class="chatbot" id="chatbot">
-      <!-- Tree Mascot -->
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Tree_icon.svg/80px-Tree_icon.svg.png" alt="Tree Mascot" class="tree-mascot" title="Your friendly tree mascot" />
-      <h3 title="Ask me anything about executing your plan">Ask Rooty</h3>
-      <div class="chat-log" id="chatLog">
-        <p><strong>Rooty:</strong> Hey there! I’m here to help you execute your action items using your current plan and the provided resources. What do you need help with to get started?</p>
+    <!-- Tab Content: Tasks (Generic Tasks) -->
+    <div id="tasks" class="tab-content">
+      <h3 title="Common tasks every college student should complete">Tasks</h3>
+      <!-- Task Example 1: Register for Classes -->
+      <div class="action-item" id="task1" data-impact="9" data-effort="3" data-urgency="9" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="High importance and moderate effort">High Importance / Moderate Effort</span>
+          Register for Classes
+        </h4>
+        <p title="Register for classes to secure your schedule for the semester. This is essential for your academic progress.">
+          Complete your class registration by checking your academic portal and selecting courses that meet your graduation requirements.
+        </p>
+        <p>Due Date: <em>2025-01-15</em></p>
+        <button class="action-button" onclick="toggleAction('task1', 'resourcesTask1')" title="Mark task as in progress or complete">Start</button>
+        <div class="resource-list" id="resourcesTask1">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Learn how to register for classes">Class Registration Guide</a></li>
+            <li><a href="#" target="_blank" title="Check academic requirements">Academic Requirements FAQ</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="predetermined-questions" title="Quick questions to get you started">
-        <button onclick="sendPredefined('How do I apply for financial aid?')" title="Learn how to apply for financial aid">How do I apply for financial aid?</button>
-        <button onclick="sendPredefined('What tuition fee waiver options are available?')" title="Learn about tuition fee waiver options">What tuition fee waiver options are available?</button>
-        <button onclick="sendPredefined('How can I manage my living expenses?')" title="Tips on managing living expenses">How can I manage my living expenses?</button>
-        <button onclick="sendPredefined('What steps should I take next?')" title="Get guidance on your next steps">What steps should I take next?</button>
+      <!-- Task Example 2: Submit Financial Aid Documents -->
+      <div class="action-item" id="task2" data-impact="8" data-effort="4" data-urgency="8" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="High impact with moderate effort">High Impact / Moderate Effort</span>
+          Submit Financial Aid Documents
+        </h4>
+        <p title="Ensure all your financial aid forms are completed and submitted on time to secure your funding.">
+          Gather and submit all necessary financial aid documents by reviewing your FAFSA and any additional school-specific forms.
+        </p>
+        <p>Due Date: <em>2025-01-31</em></p>
+        <button class="action-button" onclick="toggleAction('task2', 'resourcesTask2')" title="Mark task as in progress or complete">Start</button>
+        <div class="resource-list" id="resourcesTask2">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Step-by-step FAFSA guide">FAFSA Guide</a></li>
+            <li><a href="#" target="_blank" title="List of required documents">Financial Aid Checklist</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type your question here..." title="Type your question here" />
-        <button class="action-button" onclick="sendChat()" title="Send your question">Send</button>
+      <!-- Task Example 3: Set Up a Personal Budget -->
+      <div class="action-item" id="task3" data-impact="7" data-effort="3" data-urgency="7" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="Important for managing your expenses">Important / Low Effort</span>
+          Set Up a Personal Budget
+        </h4>
+        <p title="Create a budget to track your income and expenses, helping you manage your money effectively.">
+          Use budgeting tools to create a personal budget that tracks your income, fixed expenses, and discretionary spending.
+        </p>
+        <p>Due Date: <em>2025-02-05</em></p>
+        <button class="action-button" onclick="toggleAction('task3', 'resourcesTask3')" title="Mark task as in progress or complete">Start</button>
+        <div class="resource-list" id="resourcesTask3">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Guide to creating a budget">Budgeting 101</a></li>
+            <li><a href="#" target="_blank" title="Recommended budgeting apps">Best Budgeting Apps</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Resources Section (Separate Carousel) -->
   <div class="container" id="resources-section">
-    <h2 class="section-title" title="Helpful tools and guides">Resources</h2>
+    <h2 class="section-title" title="Helpful tools and guides to support your plan">Resources</h2>
     <div class="carousel" title="Browse through helpful tools and guides">
       <div class="resource-card recommended" title="Highly recommended resource">
         <div class="badge" title="Highly recommended">Recommended</div>
@@ -689,6 +753,19 @@
       });
     }
 
+    // Tab functionality for the Act section
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tab = button.getAttribute('data-tab');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(tab).classList.add('active');
+      });
+    });
+
     // Append a message to the chatbot log
     function appendChatMessage(sender, message) {
       const chatLog = document.getElementById('chatLog');
@@ -725,7 +802,7 @@
     const gaugeChart = new Chart(gaugeCtx, {
       type: 'doughnut',
       data: {
-        // Use two values: 6 and 4. The second value is transparent.
+        // Use two values: 6 and 4. Second value is transparent.
         labels: ['Score'],
         datasets: [{
           data: [healthScore, 10 - healthScore],
