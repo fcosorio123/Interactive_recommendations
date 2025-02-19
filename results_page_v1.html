@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sprint 2025 Financial Plan</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(135deg, #0077cc, #005fa3);
+      color: #fff;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      letter-spacing: 1px;
+    }
+    header h3 {
+      margin: 10px 0 0;
+      font-weight: 400;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      border-bottom: 3px solid #0077cc;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      color: #0077cc;
+    }
+    p {
+      line-height: 1.6;
+    }
+    /* Learn Section */
+    .diagnosis,
+    .observations,
+    .recommendations {
+      margin-bottom: 25px;
+    }
+    .diagnosis h3,
+    .observations h3,
+    .recommendations h3 {
+      margin-bottom: 10px;
+      color: #005fa3;
+    }
+    /* Financial Health Gauge */
+    .health-meter-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .health-meter-container label {
+      font-size: 1.2em;
+      display: block;
+      margin-bottom: 10px;
+    }
+    /* Gauge Canvas for half-doughnut gauge */
+    #healthGauge {
+      max-width: 250px;
+      margin: 0 auto;
+    }
+    .risk-notes {
+      font-size: 0.9em;
+      margin-top: 8px;
+      color: #555;
+    }
+    /* Observations Charts (3 side-by-side) */
+    .charts-container {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .chart-box {
+      flex: 1;
+      max-width: 30%;
+    }
+    /* Cumulative Observations */
+    .observations .data-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      position: relative;
+    }
+    .observations .data-item:last-child {
+      border-bottom: none;
+    }
+    .observations .data-item > span {
+      font-weight: 500;
+    }
+    .toggle-icon {
+      cursor: pointer;
+      margin-left: 10px;
+      font-size: 1.1em;
+      color: #0077cc;
+    }
+    .sub-values {
+      display: none;
+      padding: 5px 20px;
+      font-size: 0.9em;
+      color: #666;
+      background: #f9f9f9;
+      border-left: 3px solid #0077cc;
+      margin-top: 5px;
+    }
+    /* Act Section */
+    .global-progress-container {
+      background: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      height: 15px;
+      margin-bottom: 20px;
+    }
+    .global-progress {
+      height: 15px;
+      width: 0%;
+      background: #28a745;
+      transition: width 0.5s ease;
+    }
+    /* Sorting Controls for Action Items */
+    .sort-controls {
+      margin-bottom: 15px;
+    }
+    .sort-controls label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    /* Action Item Styles */
+    .action-item {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background: #fafafa;
+      transition: background-color 0.3s ease;
+    }
+    .action-item.completed {
+      text-decoration: line-through;
+      opacity: 0.7;
+      background-color: #e0e0e0;
+    }
+    .action-item .priority-indicator {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #ffc107;
+      border-radius: 4px;
+      font-size: 0.9em;
+      margin-right: 10px;
+      color: #fff;
+    }
+    .action-item h4 {
+      margin: 0 0 10px;
+      color: #333;
+    }
+    .action-button {
+      background-color: #0077cc;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+    .action-button:hover {
+      background-color: #005fa3;
+    }
+    .resource-list {
+      margin-top: 15px;
+      display: none;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .resource-list h5 {
+      margin-top: 0;
+      color: #0077cc;
+    }
+    .resource-list ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    .resource-list li {
+      margin-bottom: 8px;
+    }
+    .resource-list li a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .resource-list li a:hover {
+      text-decoration: underline;
+    }
+    /* Badge for Recommended Resources */
+    .badge {
+      background: #28a745;
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      display: inline-block;
+      margin-bottom: 5px;
+    }
+    /* Recommendations - Grouped */
+    .recommendations h4 {
+      margin: 10px 0 5px;
+      color: #0077cc;
+    }
+    .recommendations li {
+      margin-bottom: 8px;
+    }
+    /* Chatbot */
+    .chatbot {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      background: #fff;
+      margin-top: 30px;
+      position: relative;
+    }
+    .chatbot h3 {
+      margin-top: 0;
+      color: #0077cc;
+    }
+    .chat-log {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+    }
+    .chat-log p {
+      margin: 5px 0;
+    }
+    .chat-input {
+      display: flex;
+      align-items: center;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    .chat-input button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      background-color: #0077cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .chat-input button:hover {
+      background-color: #005fa3;
+    }
+    .predetermined-questions {
+      margin-top: 15px;
+    }
+    .predetermined-questions button {
+      background: #e0e0e0;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 20px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .predetermined-questions button:hover {
+      background: #d0d0d0;
+    }
+    /* Resources Section Carousel */
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding: 10px 0;
+    }
+    .resource-card {
+      position: relative;
+      min-width: 250px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      background: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .resource-card.recommended {
+      border-color: #28a745;
+    }
+    .resource-card .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .resource-card h4 {
+      margin-top: 0;
+      color: #0077cc;
+    }
+    .resource-card a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .resource-card a:hover {
+      text-decoration: underline;
+    }
+    /* Tree Mascot for Ask Rooty */
+    .tree-mascot {
+      display: block;
+      margin: 0 auto 10px;
+      width: 80px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Sprint 2025 Financial Plan</h1>
+    <h3>Remaining Balance: <span id="globalRemainingBalance">$-800</span></h3>
+  </header>
+
+  <!-- Learn Section -->
+  <div class="container" id="learn-section">
+    <h2 class="section-title" title="Overview of your college money plan">Learn</h2>
+    
+    <!-- Cumulative Diagnosis -->
+    <div class="diagnosis">
+      <h3 title="Overall financial health based on your funding & expenses">Cumulative Diagnosis</h3>
+      <p id="diagnosisText" title="This summarizes your current financial status">
+        Your <strong>financial health</strong> is [moderate].
+      </p>
+      <!-- Financial Health Gauge (Half-Doughnut Gauge) -->
+      <div class="health-meter-container">
+        <label for="healthGauge" title="Your current financial health score"><strong>Financial Health Score</strong></label>
+        <canvas id="healthGauge" title="Gauge showing 6/10"></canvas>
+      </div>
+      <div class="risk-notes" title="Risk metrics: Primary compares direct funding vs. expenses; Secondary includes all items">
+        <em>Note: Primary Risk</em> (Direct Funding vs. Direct Expenses) is...&nbsp;&nbsp;|&nbsp;&nbsp;
+        <em>Secondary Risk</em> (Overall including indirect items) is...
+      </div>
+    </div>
+    
+    <!-- Cumulative Observations -->
+    <div class="observations">
+      <h3 title="Your key financial numbers">Cumulative Observations</h3>
+      <div class="data-item" title="Total money from all funding sources: Financial Aid, Employment, and Support">
+        <span>1. Total Inflows: <strong id="totalInflows">$3,000</strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
+        <div class="sub-values">
+          Financial Aid: $1,000<br>
+          Employment Income: $1,000<br>
+          Family &amp; Friend Support: $1,000
+        </div>
+      </div>
+      <div class="data-item" title="Total expenses including tuition and living costs">
+        <span>2. Total Outflows: <strong id="totalOutflows">$3,800</strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
+        <div class="sub-values">
+          Tuition &amp; Fees: $2,000<br>
+          Living Expenses: $1,800
+        </div>
+      </div>
+      <div class="data-item" title="Your college bill is calculated as Direct Funding minus Direct Expenses">
+        <span>3. College Bill: <strong id="collegeBill">$-1,000</strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
+        <div class="sub-values">
+          Direct Funding (Financial Aid): $1,000<br>
+          Direct Expenses (Tuition &amp; Fees): $2,000
+        </div>
+      </div>
+      <div class="data-item" title="Remaining Balance is computed as Total Inflows minus Total Outflows">
+        <span>4. Remaining Balance: <strong id="remainingBalance2"></strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see calculation">&#x25B6;</span>
+        <div class="sub-values">
+          (Computed as Total Inflows – Total Outflows)
+        </div>
+      </div>
+      <div class="data-item" title="The funds you currently have available (cash, savings)">
+        <span>5. Current Capacity: <strong id="currentCapacity">$3,000</strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click for details">&#x25B6;</span>
+        <div class="sub-values">
+          (Current available funds; e.g., cash, savings)
+        </div>
+      </div>
+      <div class="data-item" title="Potential funds if you optimize your plan">
+        <span>6. Max Capacity: <strong id="maxCapacity">$4,000</strong></span>
+        <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click for details">&#x25B6;</span>
+        <div class="sub-values">
+          (Potential improvements from additional funding and expense reduction)
+        </div>
+      </div>
+      <!-- Three Charts Side-by-Side -->
+      <div class="charts-container">
+        <!-- Chart 1: College Bill Breakdown (Stacked Bar Chart) -->
+        <div class="chart-box">
+          <canvas id="chartCollegeBill" title="Breakdown of your college bill: Direct Funding vs. Direct Expenses"></canvas>
+          <p style="text-align:center; font-size:0.9em;">College Bill Breakdown</p>
+        </div>
+        <!-- Chart 2: Remaining Balance Breakdown (Stacked Bar Chart) -->
+        <div class="chart-box">
+          <canvas id="chartRemaining" title="Allocation of your Total Inflows into Outflows and Remaining Balance"></canvas>
+          <p style="text-align:center; font-size:0.9em;">Remaining Balance Breakdown</p>
+        </div>
+        <!-- Chart 3: Capacity Comparison (Bar Chart) -->
+        <div class="chart-box">
+          <canvas id="chartCapacity" title="Comparison of your Current vs. Maximum potential funds"></canvas>
+          <p style="text-align:center; font-size:0.9em;">Capacity Comparison</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cumulative Recommendations (Grouped) -->
+    <div class="recommendations">
+      <h3 title="Actions to improve your financial outlook">Cumulative Recommendations</h3>
+      <h4 title="Boost your funding sources">Increasing Inflows</h4>
+      <ul id="recommendationsInflows" title="Actions to increase funding">
+        <li>Apply for Pell Grant to potentially increase funding by $1,000—this will help flip a negative balance into positive territory and boost your Financial Health Score.</li>
+        <li>Investigate additional scholarship opportunities to enhance your funding, thereby increasing your remaining balance and improving your Financial Health Score.</li>
+      </ul>
+      <h4 title="Cut down on spending">Reducing Outflows</h4>
+      <ul id="recommendationsOutflows" title="Actions to reduce expenses">
+        <li>Review tuition fee waiver options to reduce direct expenses by $500—this will directly improve your remaining balance and elevate your Financial Health Score.</li>
+        <li>Optimize your living expenses budget to lower indirect costs, increasing net funds and boosting your Financial Health Score.</li>
+        <li>Consult with a financial advisor for targeted cost reduction strategies to improve your remaining balance and overall Financial Health Score.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Act Section -->
+  <div class="container" id="act-section">
+    <h2 class="section-title" title="Take action on your plan">Act</h2>
+    
+    <!-- Sorting Controls -->
+    <div class="sort-controls" title="Sort your action items by impact/effort or urgency/effort">
+      <label for="sortSelect">Sort Action Items by:</label>
+      <select id="sortSelect" onchange="sortActions()">
+        <option value="impact" title="Sort by Impact divided by Effort">Impact / Effort</option>
+        <option value="urgency" title="Sort by Urgency divided by Effort">Urgency / Effort</option>
+      </select>
+    </div>
+    
+    <!-- Global Action Items Progress Bar -->
+    <div class="global-progress-container" title="Overall progress on your action items">
+      <div class="global-progress" id="globalProgress" style="width: 0%;"></div>
+    </div>
+    
+    <!-- Actionable Items -->
+    <div id="actionItems">
+      <h3 title="Tasks to improve your financial situation">Actionable Items</h3>
+      <!-- Action Item Example 1 -->
+      <div class="action-item" id="action1" data-impact="9" data-effort="2" data-urgency="8" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="High impact and low effort">High Impact / Low Effort</span>
+          Apply for Pell Grant ($1,000)
+        </h4>
+        <p title="This task boosts your funding and helps correct a negative balance">
+          Securing this grant will increase your funding and improve your remaining balance and Financial Health Score by reducing the gap in your college bill.
+        </p>
+        <p>Due Date: <em>2025-02-28</em></p>
+        <button class="action-button" onclick="toggleAction('action1', 'resources1')" title="Mark task as in progress or complete">Start</button>
+        <!-- Embedded Resources for Action Item 1 -->
+        <div class="resource-list" id="resources1">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Step-by-step guide to applying for Pell Grant">Pell Grant Application Guide</a></li>
+            <li><a href="#" target="_blank" title="FAQs about financial aid">Financial Aid FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Action Item Example 2 -->
+      <div class="action-item" id="action2" data-impact="8" data-effort="7" data-urgency="7" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="High impact but requires more effort">High Impact / High Effort</span>
+          Review Tuition Fee Waiver Options ($500 Savings)
+        </h4>
+        <p title="Reducing expenses here will help improve your remaining balance and overall score">
+          Evaluating available tuition fee waiver options can significantly reduce your direct expenses—improving your remaining balance and boosting your Financial Health Score.
+        </p>
+        <p>Due Date: <em>2025-03-05</em></p>
+        <button class="action-button" onclick="toggleAction('action2', 'resources2')" title="Mark task as in progress or complete">Start</button>
+        <!-- Embedded Resources for Action Item 2 -->
+        <div class="resource-list" id="resources2">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Check your fee waiver eligibility">Tuition Fee Waiver Eligibility</a></li>
+            <li><a href="#" target="_blank" title="Learn how to apply for fee waivers">How to Apply for a Fee Waiver</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Action Item Example 3 -->
+      <div class="action-item" id="action3" data-impact="6" data-effort="3" data-urgency="6" title="Click to toggle progress">
+        <h4>
+          <span class="priority-indicator" title="Medium impact but easy to accomplish">Medium Impact / Low Effort</span>
+          Explore Part-Time Employment Opportunities
+        </h4>
+        <p title="Supplementing your income can help improve your remaining balance and score">
+          Research part-time jobs on campus or nearby to supplement your income—thereby improving both your remaining balance and Financial Health Score.
+        </p>
+        <p>Due Date: <em>2025-03-15</em></p>
+        <button class="action-button" onclick="toggleAction('action3', 'resources3')" title="Mark task as in progress or complete">Start</button>
+        <!-- Embedded Resources for Action Item 3 -->
+        <div class="resource-list" id="resources3">
+          <h5>Related Resources</h5>
+          <ul>
+            <li><a href="#" target="_blank" title="Find on-campus job opportunities">Campus Job Listings</a></li>
+            <li><a href="#" target="_blank" title="Tips for balancing work and study">Tips for Balancing Work and Study</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Ask Rooty Chatbot with Tree Mascot -->
+    <div class="chatbot" id="chatbot">
+      <!-- Tree Mascot -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Tree_icon.svg/80px-Tree_icon.svg.png" alt="Tree Mascot" class="tree-mascot" title="Your friendly tree mascot" />
+      <h3 title="Ask me anything about executing your plan">Ask Rooty</h3>
+      <div class="chat-log" id="chatLog">
+        <p><strong>Rooty:</strong> Hey there! I’m here to help you take action on your college money plan using your current plan and the resources provided. What do you need help with to get started?</p>
+      </div>
+      <div class="predetermined-questions" title="Quick questions to get you started">
+        <button onclick="sendPredefined('How do I apply for financial aid?')">How do I apply for financial aid?</button>
+        <button onclick="sendPredefined('What tuition fee waiver options are available?')">What tuition fee waiver options are available?</button>
+        <button onclick="sendPredefined('How can I manage my living expenses?')">How can I manage my living expenses?</button>
+        <button onclick="sendPredefined('What steps should I take next?')">What steps should I take next?</button>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type your question here..." title="Type your question here" />
+        <button class="action-button" onclick="sendChat()" title="Send your question">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources Section (Separate Carousel) -->
+  <div class="container" id="resources-section">
+    <h2 class="section-title" title="Tools and guides to help you">Resources</h2>
+    <div class="carousel" title="Browse through helpful tools and guides">
+      <div class="resource-card recommended">
+        <div class="badge" title="Highly recommended">Recommended</div>
+        <h4>Financial Aid Guide</h4>
+        <p>A comprehensive guide to applying for financial aid.</p>
+        <a href="#" target="_blank" title="Learn more about financial aid">Learn More</a>
+      </div>
+      <div class="resource-card">
+        <h4>Tuition Fee Waivers</h4>
+        <p>Explore options to reduce your tuition fees.</p>
+        <a href="#" target="_blank" title="Learn more about fee waivers">Learn More</a>
+      </div>
+      <div class="resource-card recommended">
+        <div class="badge" title="Highly recommended">Recommended</div>
+        <h4>Living Expenses Management</h4>
+        <p>Tips and strategies to manage your living expenses effectively.</p>
+        <a href="#" target="_blank" title="Learn more about managing living expenses">Learn More</a>
+      </div>
+      <div class="resource-card">
+        <h4>Budgeting Tools</h4>
+        <p>Find tools to create and manage your personal budget.</p>
+        <a href="#" target="_blank" title="Learn more about budgeting tools">Learn More</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Section -->
+  <script>
+    // Update global progress based on completed action items
+    function updateGlobalProgress() {
+      const actionItems = document.querySelectorAll('.action-item');
+      let completedCount = 0;
+      actionItems.forEach(item => {
+        if(item.classList.contains('completed')) {
+          completedCount++;
+        }
+      });
+      const progressPercent = (completedCount / actionItems.length) * 100;
+      document.getElementById('globalProgress').style.width = progressPercent + '%';
+    }
+    
+    // Toggle state of an action item and show/hide its resources
+    function toggleAction(itemId, resourcesId) {
+      const actionItem = document.getElementById(itemId);
+      const button = actionItem.querySelector('button.action-button');
+      const resourceList = document.getElementById(resourcesId);
+      const currentText = button.textContent.trim();
+
+      if (currentText === 'Start') {
+        button.textContent = 'In Progress';
+        resourceList.style.display = 'block';
+      } else if (currentText === 'In Progress') {
+        button.textContent = 'Completed';
+        actionItem.classList.add('completed');
+      } else {
+        // Optional reset functionality.
+        button.textContent = 'Start';
+        actionItem.classList.remove('completed');
+        resourceList.style.display = 'none';
+      }
+      updateGlobalProgress();
+    }
+
+    // Toggle sub-values for an observation via the clickable icon
+    function toggleSubValues(iconElement) {
+      const dataItem = iconElement.parentElement;
+      const subValues = dataItem.querySelector('.sub-values');
+      if (subValues) {
+        if (subValues.style.display === 'block') {
+          subValues.style.display = 'none';
+          iconElement.innerHTML = '&#x25B6;'; // right arrow (collapsed)
+        } else {
+          subValues.style.display = 'block';
+          iconElement.innerHTML = '&#x25BC;'; // down arrow (expanded)
+        }
+      }
+    }
+
+    // Sorting mechanism for Action Items
+    function sortActions() {
+      const sortType = document.getElementById('sortSelect').value;
+      const container = document.getElementById('actionItems');
+      const itemsArray = Array.from(container.querySelectorAll('.action-item'));
+      
+      itemsArray.sort((a, b) => {
+        const impactA = parseFloat(a.getAttribute('data-impact'));
+        const effortA = parseFloat(a.getAttribute('data-effort'));
+        const urgencyA = parseFloat(a.getAttribute('data-urgency'));
+        const impactB = parseFloat(b.getAttribute('data-impact'));
+        const effortB = parseFloat(b.getAttribute('data-effort'));
+        const urgencyB = parseFloat(b.getAttribute('data-urgency'));
+        
+        let scoreA, scoreB;
+        if (sortType === 'impact') {
+          scoreA = impactA / effortA;
+          scoreB = impactB / effortB;
+        } else if (sortType === 'urgency') {
+          scoreA = urgencyA / effortA;
+          scoreB = urgencyB / effortB;
+        }
+        return scoreB - scoreA;
+      });
+      
+      itemsArray.forEach(item => {
+        container.appendChild(item);
+      });
+    }
+
+    // Append a message to the chatbot log
+    function appendChatMessage(sender, message) {
+      const chatLog = document.getElementById('chatLog');
+      const msgElem = document.createElement('p');
+      msgElem.innerHTML = '<strong>' + sender + ':</strong> ' + message;
+      chatLog.appendChild(msgElem);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // Send chat message from user input
+    function sendChat() {
+      const input = document.getElementById('chatInput');
+      const userMessage = input.value.trim();
+      if (userMessage !== '') {
+        appendChatMessage('You', userMessage);
+        setTimeout(() => {
+          appendChatMessage('Rooty', 'Based on your current plan and the provided resources, let’s work together to execute your next step.');
+        }, 800);
+        input.value = '';
+      }
+    }
+
+    // Send a predetermined question from the chatbot
+    function sendPredefined(question) {
+      appendChatMessage('You', question);
+      setTimeout(() => {
+        appendChatMessage('Rooty', 'Based on your current plan and the provided resources, here is some guidance to help you execute this step: [Detailed answer for "' + question + '"]');
+      }, 800);
+    }
+
+    // Create a gauge chart for Financial Health Score using Chart.js (Gauge-style Doughnut Chart)
+    const gaugeCtx = document.getElementById('healthGauge').getContext('2d');
+    const healthScore = 6; // Example score (out of 10)
+    const gaugeChart = new Chart(gaugeCtx, {
+      type: 'doughnut',
+      data: {
+        // Use two values: 6 and 4. The second value's backgroundColor is set to transparent.
+        labels: ['Score'],
+        datasets: [{
+          data: [healthScore, 10 - healthScore],
+          backgroundColor: ['#27ae60', 'rgba(0,0,0,0)'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        rotation: -Math.PI,
+        circumference: Math.PI,
+        cutout: '50%',  // Thicker arc for better visibility
+        plugins: {
+          legend: { display: false },
+          tooltip: { 
+            enabled: true, 
+            callbacks: { 
+              label: () => 'Financial Health: ' + healthScore + '/10'
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'centerText',
+        afterDraw: function(chart) {
+          const {ctx, chartArea: {left, width, top, height}} = chart;
+          ctx.save();
+          const fontSize = (height / 4).toFixed(2);
+          ctx.font = fontSize + "px Roboto";
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#333';
+          ctx.fillText(healthScore + "/10", left + width / 2, top + height / 2);
+          ctx.restore();
+        }
+      }]
+    });
+
+    // Update Remaining Balance text with sign (+ or -)
+    const remainingBalanceValue = -800; // Updated negative remaining balance
+    const rbElement = document.getElementById('remainingBalance2');
+    rbElement.textContent = (remainingBalanceValue >= 0 ? '+' : '-') + '$' + Math.abs(remainingBalanceValue);
+
+    // Create Chart 1: College Bill Breakdown (Stacked Bar Chart)
+    const ctxCollegeBill = document.getElementById('chartCollegeBill').getContext('2d');
+    const chartCollegeBill = new Chart(ctxCollegeBill, {
+      type: 'bar',
+      data: {
+        labels: ['College Bill'],
+        datasets: [{
+          label: 'Direct Funding (Financial Aid)',
+          data: [1000],
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        },
+        {
+          label: 'Direct Expenses (Tuition & Fees)',
+          data: [2000],
+          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Create Chart 2: Remaining Balance Breakdown (Stacked Bar Chart)
+    // Total Inflows: $3,000, Outflows: $3,800, Remaining Balance: -$800.
+    const ctxRemaining = document.getElementById('chartRemaining').getContext('2d');
+    const chartRemaining = new Chart(ctxRemaining, {
+      type: 'bar',
+      data: {
+        labels: ['Total Inflows'],
+        datasets: [{
+          label: 'Outflows',
+          data: [3800],
+          backgroundColor: 'rgba(255, 159, 64, 0.6)'
+        },
+        {
+          label: 'Remaining Balance',
+          data: [-800],
+          backgroundColor: 'rgba(75, 192, 192, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Create Chart 3: Capacity Comparison (Bar Chart)
+    const ctxCapacity = document.getElementById('chartCapacity').getContext('2d');
+    const chartCapacity = new Chart(ctxCapacity, {
+      type: 'bar',
+      data: {
+        labels: ['Current Capacity', 'Max Capacity'],
+        datasets: [{
+          label: 'Amount ($)',
+          data: [3000, 4000],
+          backgroundColor: ['rgba(153, 102, 255, 0.6)', 'rgba(255, 205, 86, 0.6)'],
+          borderColor: ['rgba(153, 102, 255, 1)', 'rgba(255, 205, 86, 1)'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  </script>
+</body>
+</html>
