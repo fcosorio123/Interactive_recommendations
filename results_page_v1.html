@@ -96,6 +96,13 @@
       flex: 1;
       max-width: 30%;
     }
+    /* Additional Charts Container (2 side-by-side) */
+    .additional-charts {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      margin-top: 20px;
+    }
     /* Cumulative Observations */
     .observations .data-item {
       padding: 8px 0;
@@ -342,7 +349,7 @@
   <!-- Header Section -->
   <header>
     <h1>Sprint 2025 Financial Plan</h1>
-    <h3>Remaining Balance: <span id="globalRemainingBalance">$-800</span></h3>
+    <h3 title="Your remaining funds after all expenses">Remaining Balance: <span id="globalRemainingBalance">$-800</span></h3>
   </header>
 
   <!-- Learn Section -->
@@ -351,26 +358,26 @@
     
     <!-- Cumulative Diagnosis -->
     <div class="diagnosis">
-      <h3 title="Overall financial health based on your funding & expenses">Cumulative Diagnosis</h3>
-      <p id="diagnosisText" title="This summarizes your current financial status">
-        Your <strong>financial health</strong> is [moderate].
+      <h3 title="Summary of your overall financial health">Cumulative Diagnosis</h3>
+      <p id="diagnosisText" title="This text summarizes your current financial status based on your plan">
+        Your financial health is moderate.
       </p>
       <!-- Financial Health Gauge (Half-Doughnut Gauge) -->
       <div class="health-meter-container">
-        <label for="healthGauge" title="Your current financial health score"><strong>Financial Health Score</strong></label>
+        <label for="healthGauge" title="Your current financial health score (out of 10)"><strong>Financial Health Score:</strong></label>
         <canvas id="healthGauge" title="Gauge showing 6/10"></canvas>
       </div>
-      <div class="risk-notes" title="Risk metrics: Primary compares direct funding vs. expenses; Secondary includes all items">
-        <em>Note: Primary Risk</em> (Direct Funding vs. Direct Expenses) is...&nbsp;&nbsp;|&nbsp;&nbsp;
-        <em>Secondary Risk</em> (Overall including indirect items) is...
+      <div class="risk-notes" title="Primary risk compares your direct funding vs. your direct expenses; Secondary risk includes all funding and costs">
+        <em>Primary Risk</em> (Direct Funding vs. Direct Expenses): 5/10&nbsp;&nbsp;|&nbsp;&nbsp;
+        <em>Secondary Risk</em> (Overall including indirect items): 7/10
       </div>
     </div>
     
     <!-- Cumulative Observations -->
     <div class="observations">
-      <h3 title="Your key financial numbers">Cumulative Observations</h3>
-      <div class="data-item" title="Total money from all funding sources: Financial Aid, Employment, and Support">
-        <span>1. Total Inflows: <strong id="totalInflows">$3,000</strong></span>
+      <h3 title="Key financial numbers for your plan">Cumulative Observations</h3>
+      <div class="data-item" title="Total funds from all sources: Financial Aid, Employment, and Support">
+        <span>Total Inflows: <strong id="totalInflows">$3,000</strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
         <div class="sub-values">
           Financial Aid: $1,000<br>
@@ -379,7 +386,7 @@
         </div>
       </div>
       <div class="data-item" title="Total expenses including tuition and living costs">
-        <span>2. Total Outflows: <strong id="totalOutflows">$3,800</strong></span>
+        <span>Total Outflows: <strong id="totalOutflows">$3,800</strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
         <div class="sub-values">
           Tuition &amp; Fees: $2,000<br>
@@ -387,29 +394,29 @@
         </div>
       </div>
       <div class="data-item" title="Your college bill is calculated as Direct Funding minus Direct Expenses">
-        <span>3. College Bill: <strong id="collegeBill">$-1,000</strong></span>
+        <span>College Bill: <strong id="collegeBill">$-1,000</strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see breakdown">&#x25B6;</span>
         <div class="sub-values">
           Direct Funding (Financial Aid): $1,000<br>
           Direct Expenses (Tuition &amp; Fees): $2,000
         </div>
       </div>
-      <div class="data-item" title="Remaining Balance is computed as Total Inflows minus Total Outflows">
-        <span>4. Remaining Balance: <strong id="remainingBalance2"></strong></span>
+      <div class="data-item" title="Remaining Balance is calculated as Total Inflows minus Total Outflows">
+        <span>Remaining Balance: <strong id="remainingBalance2"></strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click to see calculation">&#x25B6;</span>
         <div class="sub-values">
           (Computed as Total Inflows – Total Outflows)
         </div>
       </div>
-      <div class="data-item" title="The funds you currently have available (cash, savings)">
-        <span>5. Current Capacity: <strong id="currentCapacity">$3,000</strong></span>
+      <div class="data-item" title="Funds you currently have available (e.g., cash, savings)">
+        <span>Current Capacity: <strong id="currentCapacity">$3,000</strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click for details">&#x25B6;</span>
         <div class="sub-values">
           (Current available funds; e.g., cash, savings)
         </div>
       </div>
-      <div class="data-item" title="Potential funds if you optimize your plan">
-        <span>6. Max Capacity: <strong id="maxCapacity">$4,000</strong></span>
+      <div class="data-item" title="Potential funds available if you optimize your plan">
+        <span>Max Capacity: <strong id="maxCapacity">$4,000</strong></span>
         <span class="toggle-icon" onclick="toggleSubValues(this)" title="Click for details">&#x25B6;</span>
         <div class="sub-values">
           (Potential improvements from additional funding and expense reduction)
@@ -429,22 +436,35 @@
         </div>
         <!-- Chart 3: Capacity Comparison (Bar Chart) -->
         <div class="chart-box">
-          <canvas id="chartCapacity" title="Comparison of your Current vs. Maximum potential funds"></canvas>
+          <canvas id="chartCapacity" title="Comparison of your Current vs. Maximum funds"></canvas>
           <p style="text-align:center; font-size:0.9em;">Capacity Comparison</p>
+        </div>
+      </div>
+      <!-- Additional Charts: Living Expenses and Funding Breakdown -->
+      <div class="charts-container additional-charts">
+        <!-- Chart 4: Living Expenses Breakdown (Pie Chart) -->
+        <div class="chart-box">
+          <canvas id="chartLivingExpenses" title="Breakdown of your living expenses"></canvas>
+          <p style="text-align:center; font-size:0.9em;">Living Expenses Breakdown</p>
+        </div>
+        <!-- Chart 5: Funding Breakdown (Pie Chart) -->
+        <div class="chart-box">
+          <canvas id="chartFunding" title="Breakdown of your funding sources"></canvas>
+          <p style="text-align:center; font-size:0.9em;">Funding Breakdown</p>
         </div>
       </div>
     </div>
     
     <!-- Cumulative Recommendations (Grouped) -->
     <div class="recommendations">
-      <h3 title="Actions to improve your financial outlook">Cumulative Recommendations</h3>
-      <h4 title="Boost your funding sources">Increasing Inflows</h4>
-      <ul id="recommendationsInflows" title="Actions to increase funding">
+      <h3 title="Steps to improve your financial outlook">Cumulative Recommendations</h3>
+      <h4 title="Actions to boost your funding">Increasing Inflows</h4>
+      <ul id="recommendationsInflows" title="Actions to increase your funding sources">
         <li>Apply for Pell Grant to potentially increase funding by $1,000—this will help flip a negative balance into positive territory and boost your Financial Health Score.</li>
         <li>Investigate additional scholarship opportunities to enhance your funding, thereby increasing your remaining balance and improving your Financial Health Score.</li>
       </ul>
-      <h4 title="Cut down on spending">Reducing Outflows</h4>
-      <ul id="recommendationsOutflows" title="Actions to reduce expenses">
+      <h4 title="Actions to reduce your spending">Reducing Outflows</h4>
+      <ul id="recommendationsOutflows" title="Actions to cut your expenses">
         <li>Review tuition fee waiver options to reduce direct expenses by $500—this will directly improve your remaining balance and elevate your Financial Health Score.</li>
         <li>Optimize your living expenses budget to lower indirect costs, increasing net funds and boosting your Financial Health Score.</li>
         <li>Consult with a financial advisor for targeted cost reduction strategies to improve your remaining balance and overall Financial Health Score.</li>
@@ -459,7 +479,7 @@
     <!-- Sorting Controls -->
     <div class="sort-controls" title="Sort your action items by impact/effort or urgency/effort">
       <label for="sortSelect">Sort Action Items by:</label>
-      <select id="sortSelect" onchange="sortActions()">
+      <select id="sortSelect" onchange="sortActions()" title="Select sorting method">
         <option value="impact" title="Sort by Impact divided by Effort">Impact / Effort</option>
         <option value="urgency" title="Sort by Urgency divided by Effort">Urgency / Effort</option>
       </select>
@@ -483,7 +503,7 @@
           Securing this grant will increase your funding and improve your remaining balance and Financial Health Score by reducing the gap in your college bill.
         </p>
         <p>Due Date: <em>2025-02-28</em></p>
-        <button class="action-button" onclick="toggleAction('action1', 'resources1')" title="Mark task as in progress or complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action1', 'resources1')" title="Mark task as in progress/complete">Start</button>
         <!-- Embedded Resources for Action Item 1 -->
         <div class="resource-list" id="resources1">
           <h5>Related Resources</h5>
@@ -504,12 +524,12 @@
           Evaluating available tuition fee waiver options can significantly reduce your direct expenses—improving your remaining balance and boosting your Financial Health Score.
         </p>
         <p>Due Date: <em>2025-03-05</em></p>
-        <button class="action-button" onclick="toggleAction('action2', 'resources2')" title="Mark task as in progress or complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action2', 'resources2')" title="Mark task as in progress/complete">Start</button>
         <!-- Embedded Resources for Action Item 2 -->
         <div class="resource-list" id="resources2">
           <h5>Related Resources</h5>
           <ul>
-            <li><a href="#" target="_blank" title="Check your fee waiver eligibility">Tuition Fee Waiver Eligibility</a></li>
+            <li><a href="#" target="_blank" title="Check fee waiver eligibility">Tuition Fee Waiver Eligibility</a></li>
             <li><a href="#" target="_blank" title="Learn how to apply for fee waivers">How to Apply for a Fee Waiver</a></li>
           </ul>
         </div>
@@ -525,12 +545,12 @@
           Research part-time jobs on campus or nearby to supplement your income—thereby improving both your remaining balance and Financial Health Score.
         </p>
         <p>Due Date: <em>2025-03-15</em></p>
-        <button class="action-button" onclick="toggleAction('action3', 'resources3')" title="Mark task as in progress or complete">Start</button>
+        <button class="action-button" onclick="toggleAction('action3', 'resources3')" title="Mark task as in progress/complete">Start</button>
         <!-- Embedded Resources for Action Item 3 -->
         <div class="resource-list" id="resources3">
           <h5>Related Resources</h5>
           <ul>
-            <li><a href="#" target="_blank" title="Find on-campus job opportunities">Campus Job Listings</a></li>
+            <li><a href="#" target="_blank" title="Browse on-campus job opportunities">Campus Job Listings</a></li>
             <li><a href="#" target="_blank" title="Tips for balancing work and study">Tips for Balancing Work and Study</a></li>
           </ul>
         </div>
@@ -543,13 +563,13 @@
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Tree_icon.svg/80px-Tree_icon.svg.png" alt="Tree Mascot" class="tree-mascot" title="Your friendly tree mascot" />
       <h3 title="Ask me anything about executing your plan">Ask Rooty</h3>
       <div class="chat-log" id="chatLog">
-        <p><strong>Rooty:</strong> Hey there! I’m here to help you take action on your college money plan using your current plan and the resources provided. What do you need help with to get started?</p>
+        <p><strong>Rooty:</strong> Hey there! I’m here to help you execute your action items using your current plan and the provided resources. What do you need help with to get started?</p>
       </div>
       <div class="predetermined-questions" title="Quick questions to get you started">
-        <button onclick="sendPredefined('How do I apply for financial aid?')">How do I apply for financial aid?</button>
-        <button onclick="sendPredefined('What tuition fee waiver options are available?')">What tuition fee waiver options are available?</button>
-        <button onclick="sendPredefined('How can I manage my living expenses?')">How can I manage my living expenses?</button>
-        <button onclick="sendPredefined('What steps should I take next?')">What steps should I take next?</button>
+        <button onclick="sendPredefined('How do I apply for financial aid?')" title="Learn how to apply for financial aid">How do I apply for financial aid?</button>
+        <button onclick="sendPredefined('What tuition fee waiver options are available?')" title="Learn about tuition fee waiver options">What tuition fee waiver options are available?</button>
+        <button onclick="sendPredefined('How can I manage my living expenses?')" title="Tips on managing living expenses">How can I manage my living expenses?</button>
+        <button onclick="sendPredefined('What steps should I take next?')" title="Get guidance on your next steps">What steps should I take next?</button>
       </div>
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type your question here..." title="Type your question here" />
@@ -560,26 +580,26 @@
 
   <!-- Resources Section (Separate Carousel) -->
   <div class="container" id="resources-section">
-    <h2 class="section-title" title="Tools and guides to help you">Resources</h2>
+    <h2 class="section-title" title="Helpful tools and guides">Resources</h2>
     <div class="carousel" title="Browse through helpful tools and guides">
-      <div class="resource-card recommended">
+      <div class="resource-card recommended" title="Highly recommended resource">
         <div class="badge" title="Highly recommended">Recommended</div>
         <h4>Financial Aid Guide</h4>
         <p>A comprehensive guide to applying for financial aid.</p>
         <a href="#" target="_blank" title="Learn more about financial aid">Learn More</a>
       </div>
-      <div class="resource-card">
+      <div class="resource-card" title="Explore tuition fee waiver options">
         <h4>Tuition Fee Waivers</h4>
         <p>Explore options to reduce your tuition fees.</p>
         <a href="#" target="_blank" title="Learn more about fee waivers">Learn More</a>
       </div>
-      <div class="resource-card recommended">
+      <div class="resource-card recommended" title="Highly recommended resource">
         <div class="badge" title="Highly recommended">Recommended</div>
         <h4>Living Expenses Management</h4>
         <p>Tips and strategies to manage your living expenses effectively.</p>
         <a href="#" target="_blank" title="Learn more about managing living expenses">Learn More</a>
       </div>
-      <div class="resource-card">
+      <div class="resource-card" title="Tools to help you budget your money">
         <h4>Budgeting Tools</h4>
         <p>Find tools to create and manage your personal budget.</p>
         <a href="#" target="_blank" title="Learn more about budgeting tools">Learn More</a>
@@ -699,13 +719,13 @@
       }, 800);
     }
 
-    // Create a gauge chart for Financial Health Score using Chart.js (Gauge-style Doughnut Chart)
+    // Create a gauge chart for Financial Health Score using Chart.js (Half-Doughnut Gauge)
     const gaugeCtx = document.getElementById('healthGauge').getContext('2d');
     const healthScore = 6; // Example score (out of 10)
     const gaugeChart = new Chart(gaugeCtx, {
       type: 'doughnut',
       data: {
-        // Use two values: 6 and 4. The second value's backgroundColor is set to transparent.
+        // Use two values: 6 and 4. The second value is transparent.
         labels: ['Score'],
         datasets: [{
           data: [healthScore, 10 - healthScore],
@@ -825,6 +845,49 @@
         responsive: true,
         scales: { y: { beginAtZero: true } },
         plugins: { legend: { display: false } }
+      }
+    });
+
+    // Create Chart 4: Living Expenses Breakdown (Pie Chart)
+    const ctxLivingExpenses = document.getElementById('chartLivingExpenses').getContext('2d');
+    const chartLivingExpenses = new Chart(ctxLivingExpenses, {
+      type: 'pie',
+      data: {
+        labels: ['Rent', 'Food', 'Transportation', 'Misc'],
+        datasets: [{
+          data: [800, 500, 300, 200],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(255, 205, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Create Chart 5: Funding Breakdown (Pie Chart)
+    const ctxFunding = document.getElementById('chartFunding').getContext('2d');
+    const chartFunding = new Chart(ctxFunding, {
+      type: 'pie',
+      data: {
+        labels: ['Financial Aid', 'Employment Income', 'Family & Friend Support'],
+        datasets: [{
+          data: [1000, 1000, 1000],
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
       }
     });
   </script>
