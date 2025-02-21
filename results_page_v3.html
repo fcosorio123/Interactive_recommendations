@@ -615,7 +615,7 @@
           </div>
           <div id="actionableArbol" class="tab-content active">
             <h3 title="System-generated actionable items">Actionable Items (Arbol)</h3>
-            <!-- Sample Arbol Actionable Items -->
+            <!-- Sample Arbol Actionable Items with data-saving attributes -->
             <div class="action-item" id="action1" data-impact="9" data-saving="1000" data-effort="2" data-urgency="8" title="Click to toggle progress">
               <h4>
                 <span class="priority-indicator" title="High impact and low effort">High Impact / Low Effort</span>
@@ -652,7 +652,7 @@
                 </ul>
               </div>
             </div>
-            <div class="action-item" id="action3" data-impact="6" data-effort="3" data-urgency="6" title="Click to toggle progress">
+            <div class="action-item" id="action3" data-impact="6" data-saving="0" data-effort="3" data-urgency="6" title="Click to toggle progress">
               <h4>
                 <span class="priority-indicator" title="Medium impact and low effort">Medium Impact / Low Effort</span>
                 Explore Part-Time Employment Opportunities
@@ -947,7 +947,7 @@
       }
     });
     
-    // Update projections: only count tasks marked "Completed" using their data-saving attribute (if provided)
+    // Update projections: only count tasks marked "Completed" using data-saving
     function updateProjections() {
       let completedSaving = 0;
       document.querySelectorAll('.action-item').forEach(item => {
@@ -957,7 +957,6 @@
           if(savingAttr) {
             completedSaving += Number(savingAttr);
           } else {
-            // fallback: multiply data-impact by 100 if no data-saving provided
             completedSaving += Number(item.getAttribute('data-impact')) * 100;
           }
         }
@@ -969,7 +968,7 @@
       simulationChart.data.datasets[0].data = [currentBalance, projBalanceIfCompleted];
       simulationChart.data.datasets[1].data = [currentHealthScore, projHealthIfCompleted];
       
-      // Adjust y-axis for balance with some padding
+      // Adjust y-axis for balance with padding
       let balanceMin = Math.min(currentBalance, projBalanceIfCompleted);
       let balanceMax = Math.max(currentBalance, projBalanceIfCompleted);
       simulationChart.options.scales.balance.suggestedMin = balanceMin - 100;
