@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooty Beta Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        .rooty {
+            font-size: 24px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .rooty-face {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .buttons button, .feedback button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .buttons button:hover, .feedback button:hover {
+            background: #45a049;
+        }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 10px;
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        .show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Meet Rooty 🌳</h1>
+        <div id="rootyResponse" class="rooty">
+            <span id="rootyFace" class="rooty-face">😊</span>
+            <span id="rootyText">"Hey there! Ready to get your finances in check?"</span>
+        </div>
+        <div class="buttons">
+            <button onclick="rootyReact('roast')">Roast Me</button>
+            <button onclick="rootyReact('hype')">Hype Me Up</button>
+            <button onclick="rootyReact('remind')">Remind Me</button>
+            <button onclick="rootyReact('advice')">Give Me Advice</button>
+            <button onclick="rootyReact('motivate')">Motivate Me</button>
+            <button onclick="rootyReact('random')">Random Rooty</button>
+        </div>
+        <div class="feedback">
+            <button onclick="recordFeedback('like')">👍 Like</button>
+            <button onclick="recordFeedback('dislike')">👎 Dislike</button>
+        </div>
+    </div>
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        let feedbackData = { like: 0, dislike: 0 };
+        
+        function rootyReact(type) {
+            let messages = {
+                roast: [
+                    { text: "Oh, so we're just ignoring our budget now? Love that for you.", face: "😒" },
+                    { text: "That impulse buy? ICONIC. Financially smart? Not so much.", face: "🙄" },
+                    { text: "I’d drop a leaf every time you overspend, but I’d be bald by now.", face: "😑" }
+                ],
+                hype: [
+                    { text: "WOW! You actually saved money?! Who even are you?!", face: "🤩" },
+                    { text: "Budget goals achieved! Give yourself a high five! 🙌", face: "🎉" },
+                    { text: "Responsible and thriving. Rooty approves!", face: "😃" }
+                ],
+                remind: [
+                    { text: "Hey, friendly reminder to track your spending today! 🌱", face: "😊" },
+                    { text: "Ignoring me won’t make your finances better, just saying.", face: "🤨" },
+                    { text: "Wouldn't it be nice to check in with your budget? No pressure. (Except totally pressure.)", face: "😏" }
+                ],
+                advice: [
+                    { text: "Pro tip: Saving money is like planting a tree. Start small, stay consistent, and watch it grow!", face: "🌳" },
+                    { text: "A budget is your financial GPS—without it, you’re just driving blind. Plan wisely!", face: "🛣️" },
+                    { text: "Financial freedom isn’t about how much you make, it’s about how much you keep.", face: "💰" }
+                ],
+                motivate: [
+                    { text: "You got this! One good money decision at a time. Rooty believes in you!", face: "💪" },
+                    { text: "Every dollar saved is a step closer to your goals. Keep going!", face: "🚀" },
+                    { text: "Small savings add up to big wins. Future you will thank you!", face: "😃" }
+                ],
+                random: [
+                    { text: "Your finances called. They miss you.", face: "📞" },
+                    { text: "Checking your bank account at 2 AM? Same.", face: "😴" },
+                    { text: "Roses are red, violets are blue, savings are great, and so are you!", face: "🌹" }
+                ]
+            };
+            let responseObj = messages[type][Math.floor(Math.random() * messages[type].length)];
+            document.getElementById("rootyFace").textContent = responseObj.face;
+            document.getElementById("rootyText").textContent = `"${responseObj.text}"`;
+        }
+        
+        function recordFeedback(type) {
+            feedbackData[type]++;
+            showToast(type === 'like' ? 'Thanks for your feedback! 👍' : 'Noted! We appreciate your input. 👎');
+            console.log("Feedback Data:", feedbackData);
+        }
+        
+        function showToast(message) {
+            let toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 2000);
+        }
+    </script>
+</body>
+</html>
