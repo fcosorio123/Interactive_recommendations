@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arbol Streak with 10‑Second Cycle & Persistent Log</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Basic Styling */
+    body {
+      background-color: #1e1e1e;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .hidden { display: none !important; }
+    
+    /* --- Layout for various sections (AI questions, carousel, todo list, etc.) --- */
+    .ai-questions { text-align: center; margin-top: 1rem; padding: 1rem; background-color: #252525; border-radius: 8px; }
+    .ai-questions label { margin: 0 0.5rem; }
+    
+    .carousel-container { position: relative; width: 90%; max-width: 1200px; margin: 0 auto; overflow: hidden; }
+    .carousel { display: flex; gap: 1rem; transition: transform 0.35s; padding: 1rem 0; white-space: nowrap; }
+    .card { min-width: 250px; max-width: 300px; border-radius: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); padding: 15px; text-align: center; font-weight: bold; user-select: none; cursor: default; overflow-wrap: break-word; transition: transform 0.3s ease-in-out; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; }
+    .card:hover { transform: scale(1.05); }
+    .card p { white-space: normal; word-break: break-word; margin-bottom: 1rem; }
+    .high { background-color: #e74c3c; }
+    .medium { background-color: #f39c12; }
+    .low { background-color: #2ecc71; }
+    .selected { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+    
+    .nav-button { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(255,255,255,0.2); color: #fff; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; z-index: 10; border: none; font-size: 1.5rem; }
+    .nav-button:hover { background-color: rgba(255,255,255,0.4); }
+    .nav-left { left: 10px; }
+    .nav-right { right: 10px; }
+    
+    .selection-mode { text-align: center; margin-top: 1rem; padding: 1rem; background: #444; border: 2px solid #3498db; border-radius: 8px; font-size: 1.2rem; font-weight: bold; max-width: 600px; margin: auto; }
+    .selection-mode label { margin-right: 1rem; }
+    
+    .todo-list { width: 90%; max-width: 1200px; margin: 1rem auto; background: #252525; border-radius: 0.5rem; padding: 1rem; display: none; }
+    .todo-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #444; }
+    .todo-item:last-child { border-bottom: none; }
+    .completed { text-decoration: line-through; opacity: 0.6; }
+    
+    #supportiveMessage { text-align: center; font-size: 1.1rem; color: #8fbc8f; margin-top: 1rem; }
+    
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; color: #fff; transition: background 0.3s; margin-left: 5px; }
+    .btn:hover { opacity: 0.9; }
+    .add-btn { background-color: #3498db; }
+    .in-progress-btn { background-color: #9b59b6; }
+    .complete-btn { background-color: #27ae60; }
+    .reset-btn { background-color: #e67e22; }
+    
+    .start-btn { background: #3498db; padding: 10px 15px; margin-top: 10px; display: none; }
+    .start-btn:hover { background: #2980b9; }
+    
+    .edit-btn { background: #9b59b6; padding: 10px 15px; margin-top: 10px; display: none; }
+    .edit-btn:hover { background: #8e44ad; }
+    
+    .countdown { font-size: 1.3rem; font-weight: bold; color: #ffcc00; margin-top: 15px; display: none; text-align: center; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); }
+    
+    .chart-container { margin-top: 20px; text-align: center; position: relative; }
+    #balanceChart { background: #333; border-radius: 8px; }
+    
+    #reminderModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 20; }
+    #reminderModal .modal-content { background: #fff; color: #000; padding: 20px; border-radius: 8px; width: 300px; }
+    
+    /* DAILY CHECK-IN MODAL */
+    #dailyCheckInModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 30; }
+    #dailyCheckInModal .modal-content { background: #fff; color: #000; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
+    #checkInForm label { margin-right: 1rem; }
+    #checkInForm div { margin-bottom: 1rem; }
+    #checkInForm input[type="radio"] { margin-right: 0.25rem; }
+    
+    /* TOAST CONTAINER */
+    #toastContainer { position: fixed; bottom: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background-color: #333; color: #fff; padding: 0.75rem 1rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-weight: normal; animation: fadeInOut 3s forwards; }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(10px); }
+      10% { opacity: 1; transform: translateY(0); }
+      80% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(10px); }
+    }
+    
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      font-size: 3rem;
+      z-index: 9998;
+      opacity: 1;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: confettiFade 1s forwards;
+    }
+    @keyframes confettiFade {
+      0% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -150%); }
+    }
+    
+    /* Streak progress bar */
+    #streakProgress { width: 100%; background-color: #444; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+    #streakProgressBar { height: 8px; background-color: #ff4500; width: 0%; transition: width 0.5s ease; }
+    
+    /* Tooltip for streak info */
+    .info-icon {
+      display: inline-block;
+      margin-left: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      text-align: center;
+      line-height: 18px;
+    }
+    .info-icon:hover::after {
+      content: "A streak is the consecutive cycles (10‑second intervals) where you act on your tasks. Act within the cycle to succeed; otherwise, you fail.";
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 6px;
+      border-radius: 4px;
+      top: 50px;
+      right: 20px;
+      width: 250px;
+      z-index: 10000;
+      font-size: 0.9rem;
+    }
+    
+    /* Activation overlay */
+    #streakActivateOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      z-index: 50;
+    }
+    
+    /* Persistent Streak Log */
+    #streakLog {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      text-align: left;
+      max-height: 100px;
+      overflow-y: auto;
+      background-color: rgba(0,0,0,0.3);
+      padding: 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="flex flex-col items-center pt-6">
+    <h1 class="text-3xl font-bold mb-6">Arbol Streak (Activated on Start)</h1>
+    <!-- STREAK CONTAINER -->
+    <div id="streakContainer" class="bg-blue-900 p-2 mt-6 rounded text-center w-11/12 max-w-xl relative">
+      <p id="streakText" class="text-xl font-bold"></p>
+      <span class="info-icon" title="A streak is the consecutive cycles (10‑second intervals) where you act on your tasks. Act within the cycle to succeed; otherwise, you fail.">?</span>
+      <!-- Streak progress bar -->
+      <div id="streakProgress">
+        <div id="streakProgressBar"></div>
+      </div>
+      <button id="freezeStreakBtn" class="btn bg-red-600 hidden mt-2">Use Streak Freeze</button>
+      <!-- Activation overlay -->
+      <div id="streakActivateOverlay">Streak Tracking Activated!</div>
+      <!-- Persistent Streak Log -->
+      <div id="streakLog"></div>
+    </div>
+    <div class="flex flex-wrap items-center gap-4 mb-4">
+      <label for="priorityFilter" class="text-xl">Filter by Priority:</label>
+      <select id="priorityFilter" class="bg-gray-800 text-white px-3 py-2 rounded">
+        <option value="all">All</option>
+        <option value="1">High</option>
+        <option value="2">Medium</option>
+        <option value="3">Low</option>
+      </select>
+    </div>
+  </div>
+  <div class="carousel-container">
+    <button class="nav-button nav-left" id="btnLeft">❮</button>
+    <div class="carousel" id="carousel"></div>
+    <button class="nav-button nav-right" id="btnRight">❯</button>
+  </div>
+  <div class="selection-mode">
+    <label class="text-xl">Priority Options:</label>
+    <label><input type="radio" name="selectionMode" value="manual" checked> Manual Selection</label>
+    <label><input type="radio" name="selectionMode" value="ai"> AI Supported</label>
+  </div>
+  <div id="aiQuestions" class="ai-questions hidden">
+    <p class="text-lg mb-2">Answer the following to help us assemble your Action Items for optimal execution:</p>
+    <label>Are you anxious?
+      <select id="aiAnxious" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="yes">Yes</option>
+        <option value="no" selected>No</option>
+      </select>
+    </label>
+    <label class="ml-4">Are you scared?
+      <select id="aiScared" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="yes">Yes</option>
+        <option value="no" selected>No</option>
+      </select>
+    </label>
+    <label class="ml-4">Motivation (1 low - 5 high):
+      <select id="aiMotivation" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </label>
+    <br>
+    <button id="getAIRecBtn" class="btn add-btn mt-2">Get AI Recommendations</button>
+  </div>
+  <div class="todo-list" id="todoList">
+    <h2 class="text-2xl font-bold mb-2">Your Selected Action Items</h2>
+    <p id="minActionMsg" class="text-red-500 hidden">For Manual Selection, you must add at least 3 action items before starting.</p>
+    <div id="todoItems"></div>
+    <p id="supportiveMessage" class="hidden"></p>
+    <label for="countdownSelect" class="text-white mt-3 block">Select Duration (days):</label>
+    <select id="countdownSelect" class="bg-gray-800 text-white px-3 py-2 rounded">
+      <option value="7">7</option>
+      <option value="14">14</option>
+      <option value="30">30</option>
+    </select>
+    <label class="text-white mt-2 block">
+      <input type="checkbox" id="useCountdown" checked> Use Countdown Timer
+    </label>
+    <button id="startBtn" class="start-btn btn">Start</button>
+    <button id="editBtn" class="edit-btn btn hidden">Edit Plan</button>
+    <button id="resetBtn" class="reset-btn btn">Reset My Plan</button>
+    <p id="countdownTimer" class="countdown"></p>
+    <div class="chart-container">
+      <canvas id="balanceChart" width="400" height="250"></canvas>
+    </div>
+  </div>
+  <!-- REMINDER MODAL -->
+  <div id="reminderModal" class="hidden">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">Set Reminder</h2>
+      <input id="reminderInput" type="text" class="border p-2 w-full mb-4" placeholder="e.g., daily, SMS">
+      <div class="flex justify-end">
+        <button id="cancelReminderBtn" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded mr-2">Cancel</button>
+        <button id="saveReminderBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">Save</button>
+      </div>
+    </div>
+  </div>
+  <!-- DAILY CHECK-IN MODAL -->
+  <div id="dailyCheckInModal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
+      <form id="checkInForm"></form>
+    </div>
+  </div>
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"></div>
+  <script>
+    // -----------------------------------------------------------------------
+    // CONFIG / VARIABLES
+    // -----------------------------------------------------------------------
+    // Set demo cycle time to 10000 ms (10 seconds)
+    const demoCycleTime = 10000;
+    let remainingBalance = 3000;
+    let toDoItems = [];
+    let scrollValue = 0;
+    let countdownEndTime = null;
+    let countdownInterval = null;
+    let currentReminderItem = null;
+    
+    // Cycle-based streak tracking variables
+    let cycleStartTime = 0;
+    let actionTaken = false;
+    let streakCount = 0;  // Current streak count
+    
+    let streakEvents = [];  // Persistent log of streak events
+    
+    // HTML references
+    const carousel = document.getElementById("carousel");
+    const btnLeft = document.getElementById("btnLeft");
+    const btnRight = document.getElementById("btnRight");
+    const priorityFilter = document.getElementById("priorityFilter");
+    const todoList = document.getElementById("todoList");
+    const todoItemsContainer = document.getElementById("todoItems");
+    const minActionMsg = document.getElementById("minActionMsg");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const editBtn = document.getElementById("editBtn");
+    const countdownTimer = document.getElementById("countdownTimer");
+    const balanceChart = document.getElementById("balanceChart");
+    const supportiveMessageEl = document.getElementById("supportiveMessage");
+    const reminderModal = document.getElementById("reminderModal");
+    const reminderInput = document.getElementById("reminderInput");
+    const cancelReminderBtn = document.getElementById("cancelReminderBtn");
+    const saveReminderBtn = document.getElementById("saveReminderBtn");
+    const streakContainer = document.getElementById("streakContainer");
+    const streakText = document.getElementById("streakText");
+    const freezeStreakBtn = document.getElementById("freezeStreakBtn");
+    const dailyCheckInModal = document.getElementById("dailyCheckInModal");
+    const checkInForm = document.getElementById("checkInForm");
+    const toastContainer = document.getElementById("toastContainer");
+    const streakProgressBar = document.getElementById("streakProgressBar");
+    const streakActivateOverlay = document.getElementById("streakActivateOverlay");
+    const streakLogEl = document.getElementById("streakLog");
+    
+    const recommendationsData = [
+      { text: "🔥 Apply for a $2,000 Grant", priority: 1, value: 2000 },
+      { text: "💰 Increase Work Hours ($1,500 Impact)", priority: 1, value: 1500 },
+      { text: "📉 Reduce Dining Plan ($600 Savings)", priority: 2, value: 600 },
+      { text: "🤑 Negotiate Tuition Discount ($800 Savings)", priority: 2, value: 800 },
+      { text: "📌 Cancel Unused Subscriptions ($150 Savings)", priority: 3, value: 150 }
+    ];
+    
+    // -----------------------------------------------------------------------
+    // Persistent Streak Log Functions
+    // -----------------------------------------------------------------------
+    function logStreakEvent(eventMessage) {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = `${timestamp}: ${eventMessage}`;
+      streakEvents.push(entry);
+      if (streakEvents.length > 10) streakEvents = streakEvents.slice(-10);
+      updateStreakLogUI();
+    }
+    function updateStreakLogUI() {
+      if (streakLogEl) {
+        streakLogEl.innerHTML = streakEvents.join("<br>");
+      }
+    }
+    
+    // -----------------------------------------------------------------------
+    // Force streak tracking OFF on page load
+    // -----------------------------------------------------------------------
+    localStorage.setItem("arbolStreakActive", "0");
+    
+    // -----------------------------------------------------------------------
+    // NOTIFICATIONS / TOASTS
+    // -----------------------------------------------------------------------
+    function showToast(message) {
+      if (!toastContainer) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerText = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) { toast.parentNode.removeChild(toast); }
+      }, 3000);
+    }
+    
+    // -----------------------------------------------------------------------
+    // CONFETTI ANIMATION
+    // -----------------------------------------------------------------------
+    function showConfetti() {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.innerText = '🎉';
+      document.body.appendChild(confetti);
+      setTimeout(() => { confetti.remove(); }, 1000);
+    }
+    
+    // -----------------------------------------------------------------------
+    // Cycle-Based Streak Logic (10-second cycle)
+    // -----------------------------------------------------------------------
+    // When streak tracking is active, we use a 10-second cycle.
+    function isStreakActive() {
+      return localStorage.getItem("arbolStreakActive") === "1";
+    }
+    
+    // Call this function when the user marks an action (either In Progress or Complete).
+    function updateStreakOnAction() {
+      if (!isStreakActive()) {
+        showToast("Action completed! (Streak not active yet.)");
+        return;
+      }
+      let now = Date.now();
+      let elapsed = now - cycleStartTime;
+      
+      if (elapsed <= demoCycleTime) {
+        // Success if action is taken within the 10-second window.
+        streakCount += 1;
+        showToast(`Success! Streak incremented to ${streakCount}.`);
+        showConfetti();
+        logStreakEvent(`Streak incremented to ${streakCount}.`);
+      } else {
+        // Action taken too late: failure.
+        showToast("Too late! You failed this cycle. Streak reset to 0.");
+        logStreakEvent("Cycle failed: action too late.");
+        streakCount = 0;
+      }
+      // Reset cycle for next round.
+      cycleStartTime = now;
+      actionTaken = true;
+      displayStreak();
+    }
+    
+    // A timer that checks the cycle continuously.
+    setInterval(() => {
+      if (!isStreakActive()) return;
+      let now = Date.now();
+      let elapsed = now - cycleStartTime;
+      // Update progress bar continuously:
+      let progress = (elapsed / demoCycleTime) * 100;
+      if (progress > 100) progress = 100;
+      streakProgressBar.style.width = `${progress}%`;
+      
+      // If the full 10-second cycle expires with no action, register a failure.
+      if (elapsed >= demoCycleTime && !actionTaken) {
+        showToast("No action taken this cycle. Streak failed, resetting to 0.");
+        logStreakEvent("Cycle failed: no action taken.");
+        streakCount = 0;
+        cycleStartTime = now;
+        displayStreak();
+      }
+      // Reset actionTaken flag if a new cycle has started.
+      if (elapsed >= demoCycleTime) {
+        actionTaken = false;
+      }
+    }, 1000);
+    
+    function displayStreak() {
+      if (!isStreakActive()) {
+        streakText.textContent = "Streak Tracking is OFF. Click Start to Activate!";
+        freezeStreakBtn.classList.add("hidden");
+        streakProgressBar.style.width = "0%";
+        return;
+      }
+      streakText.textContent = `Financial Momentum Streak (demo-based): ${streakCount} day(s)`;
+    }
+    
+    freezeStreakBtn.addEventListener("click", () => {
+      // (Freeze functionality not detailed; placeholder if needed)
+      showToast("Freeze activated! (Not implemented in this demo.)");
+      logStreakEvent("Freeze manually activated.");
+      displayStreak();
+    });
+    
+    // -----------------------------------------------------------------------
+    // DAILY CHECK-IN (Daily approach)
+    // -----------------------------------------------------------------------
+    function checkDailyCheckIn() {
+      const today = new Date().toDateString();
+      let lastCheckIn = localStorage.getItem("arbolLastCheckIn");
+      if (lastCheckIn !== today) {
+        buildDailyCheckInForm();
+        dailyCheckInModal.style.display = "flex";
+        localStorage.setItem("arbolLastCheckIn", today);
+      }
+    }
+    function buildDailyCheckInForm() {
+      checkInForm.innerHTML = "";
+      if (toDoItems.length === 0) {
+        checkInForm.innerHTML = `<p>You have no action items yet. Go ahead and add some!</p>
+          <button type="button" onclick="closeDailyCheckIn()">Close</button>`;
+        return;
+      }
+      toDoItems.forEach(item => {
+        checkInForm.innerHTML += `
+          <div>
+            <label class="font-bold">${item.text}</label><br/>
+            <label>
+              <input type="radio" name="${item.text}" value="Not Started" ${item.status === "Not Started" ? "checked" : ""}>
+              Not Started
+            </label>
+            <label>
+              <input type="radio" name="${item.text}" value="In Progress" ${item.status === "In Progress" ? "checked" : ""}>
+              In Progress
+            </label>
+            <label>
+              <input type="radio" name="${item.text}" value="Completed" ${item.status === "Completed" ? "checked" : ""}>
+              Done
+            </label>
+          </div>
+        `;
+      });
+      checkInForm.innerHTML += `<button type="button" class="btn complete-btn mt-2" onclick="saveDailyCheckIn()">Save</button>`;
+    }
+    function saveDailyCheckIn() {
+      toDoItems = toDoItems.map(item => {
+        const formValue = document.querySelector(`input[name="${item.text}"]:checked`)?.value;
+        return { ...item, status: formValue };
+      });
+      if (toDoItems.some(i => i.status === "Completed" || i.status === "In Progress")) {
+        updateStreakOnAction();
+      }
+      renderToDoList();
+      closeDailyCheckIn();
+    }
+    function closeDailyCheckIn() {
+      dailyCheckInModal.style.display = "none";
+    }
+    
+    // -----------------------------------------------------------------------
+    // AI RECOMMENDATIONS / SELECTION MODES
+    // -----------------------------------------------------------------------
+    document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
+      radio.addEventListener("change", function() {
+        if (this.value === "ai") {
+          document.getElementById("aiQuestions").classList.remove("hidden");
+          supportiveMessageEl.classList.add("hidden");
+        } else {
+          document.getElementById("aiQuestions").classList.add("hidden");
+          supportiveMessageEl.classList.add("hidden");
+        }
+        renderCarousel();
+        renderToDoList();
+      });
+    });
+    document.getElementById("getAIRecBtn").addEventListener("click", getAIRecommendations);
+    function generateSupportiveMessage(anxious, scared, motivation) {
+      let msg = "";
+      if (anxious === "yes" && scared === "yes") {
+        msg += "We know it can feel overwhelming, but every small step counts. ";
+      } else if (anxious === "yes") {
+        msg += "Feeling anxious is normal; taking action shows strength. ";
+      } else if (scared === "yes") {
+        msg += "It’s okay to be scared; taking control is the key to overcoming it. ";
+      } else {
+        msg += "You’re in a great place to take control of your future. ";
+      }
+      if (motivation < 3) {
+        msg += "Even small, steady steps can make a big difference. ";
+      } else {
+        msg += "Your motivation is a powerful tool. Use it to achieve your goals! ";
+      }
+      msg += " We've assembled a tailored list of action items to help you close the gap on your remaining balance.";
+      return msg;
+    }
+    function getAIRecommendations() {
+      const anxious = document.getElementById("aiAnxious").value;
+      const scared = document.getElementById("aiScared").value;
+      const motivation = parseInt(document.getElementById("aiMotivation").value);
+      let candidates = recommendationsData.filter(rec => 
+        !toDoItems.find(item => item.text === rec.text)
+      );
+      if (anxious === "yes") {
+        candidates = candidates.map(rec => {
+          if (rec.text.includes("Negotiate Tuition Discount"))
+            return { ...rec, value: rec.value + 200 };
+          return rec;
+        });
+      }
+      if (scared === "yes") {
+        candidates = candidates.map(rec => {
+          if (rec.text.includes("Cancel Unused Subscriptions"))
+            return { ...rec, value: rec.value + 50 };
+          return rec;
+        });
+      }
+      candidates.sort((a, b) => b.value - a.value);
+      let selected = [];
+      let total = 0;
+      for (let rec of candidates) {
+        if (total < remainingBalance) {
+          selected.push(rec);
+          total += rec.value;
+        }
+      }
+      if (total < remainingBalance) { selected = candidates.slice(); }
+      selected.forEach(rec => {
+        if (!toDoItems.find(item => item.text === rec.text)) {
+          toDoItems.push({ text: rec.text, value: rec.value, status: "Not Started" });
+        }
+      });
+      let supportiveMsg = generateSupportiveMessage(anxious, scared, motivation);
+      supportiveMessageEl.textContent = supportiveMsg;
+      supportiveMessageEl.classList.remove("hidden");
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+      document.getElementById("aiQuestions").classList.add("hidden");
+      showToast("AI Recommendations added to your list!");
+    }
+    
+    // -----------------------------------------------------------------------
+    // CAROUSEL LOGIC
+    // -----------------------------------------------------------------------
+    function renderCarousel() {
+      carousel.innerHTML = "";
+      scrollValue = 0;
+      carousel.style.transform = `translateX(0px)`;
+      const filtered = recommendationsData.filter(
+        rec => priorityFilter.value === "all" || rec.priority == priorityFilter.value
+      );
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      filtered.forEach(rec => {
+        const isSelected = toDoItems.some(item => item.text === rec.text);
+        const card = document.createElement("div");
+        card.classList.add("card");
+        if (rec.priority === 1) card.classList.add("high");
+        else if (rec.priority === 2) card.classList.add("medium");
+        else card.classList.add("low");
+        if (isSelected) {
+          card.classList.add("selected");
+          card.innerHTML = `<p>${rec.text}</p><p>(Already Added)</p>`;
+        } else {
+          if (selectionMode === "manual") {
+            card.innerHTML = `<p>${rec.text}</p>
+              <button class="btn add-btn" onclick="addToDoList('${rec.text}', ${rec.value})">
+                Add to List
+              </button>`;
+          } else {
+            card.innerHTML = `<p>${rec.text}</p>
+              <p class="text-sm italic">(Manual add disabled in AI mode)</p>`;
+          }
+        }
+        carousel.appendChild(card);
+      });
+    }
+    function scrollLeft() {
+      scrollValue -= 300;
+      if (scrollValue < 0) scrollValue = 0;
+      carousel.style.transform = `translateX(-${scrollValue}px)`;
+    }
+    function scrollRight() {
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+      scrollValue += 300;
+      if (scrollValue > maxScroll) scrollValue = maxScroll;
+      carousel.style.transform = `translateX(-${scrollValue}px)`;
+    }
+    window.addToDoList = function(text, value) {
+      if (!toDoItems.find(item => item.text === text)) {
+        toDoItems.push({ text, value, status: "Not Started" });
+        renderToDoList();
+        renderCarousel();
+        drawChart();
+        showToast(`Added "${text}" to your list!`);
+      }
+    };
+    
+    // -----------------------------------------------------------------------
+    // TODO LIST RENDERING
+    // -----------------------------------------------------------------------
+    function renderToDoList() {
+      todoItemsContainer.innerHTML = "";
+      todoList.style.display = toDoItems.length > 0 ? "block" : "none";
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      if (selectionMode === "manual") {
+        if (toDoItems.length < 3) {
+          minActionMsg.classList.remove("hidden");
+          startBtn.style.display = "none";
+        } else {
+          minActionMsg.classList.add("hidden");
+          startBtn.style.display = "inline-block";
+        }
+      } else {
+        minActionMsg.classList.add("hidden");
+        startBtn.style.display = "inline-block";
+      }
+      const inProgressItems = toDoItems.filter(i => i.status === "In Progress");
+      const notStartedItems = toDoItems.filter(i => i.status === "Not Started");
+      const completedItems = toDoItems.filter(i => i.status === "Completed");
+      if (inProgressItems.length > 0) {
+        const inProgHeader = document.createElement("h3");
+        inProgHeader.textContent = "In Progress";
+        inProgHeader.className = "text-xl font-bold mt-2";
+        todoItemsContainer.appendChild(inProgHeader);
+        inProgressItems.forEach(item => { todoItemsContainer.appendChild(createTodoItemElement(item)); });
+      }
+      if (notStartedItems.length > 0) {
+        const notStartHeader = document.createElement("h3");
+        notStartHeader.textContent = "Not Started";
+        notStartHeader.className = "text-xl font-bold mt-4";
+        todoItemsContainer.appendChild(notStartHeader);
+        notStartedItems.forEach(item => { todoItemsContainer.appendChild(createTodoItemElement(item)); });
+      }
+      if (completedItems.length > 0) {
+        const compHeader = document.createElement("h3");
+        compHeader.textContent = "Completed";
+        compHeader.className = "text-xl font-bold mt-4";
+        todoItemsContainer.appendChild(compHeader);
+        completedItems.forEach(item => { todoItemsContainer.appendChild(createTodoItemElement(item)); });
+      }
+    }
+    function createTodoItemElement(item) {
+      const itemEl = document.createElement("div");
+      itemEl.className = "todo-item";
+      const textSpan = document.createElement("span");
+      textSpan.textContent = item.text + ": " + item.status;
+      if (item.status === "Completed") { textSpan.classList.add("completed"); }
+      if (item.reminder) { textSpan.textContent += " (Reminder: " + item.reminder + ")"; }
+      const btnContainer = document.createElement("div");
+      if (item.status !== "Completed") {
+        const inProgBtn = document.createElement("button");
+        inProgBtn.className = "btn in-progress-btn";
+        inProgBtn.textContent = "In Progress";
+        inProgBtn.onclick = () => { markInProgress(item.text); updateStreakOnAction(); };
+        const compBtn = document.createElement("button");
+        compBtn.className = "btn complete-btn";
+        compBtn.textContent = "Complete";
+        compBtn.onclick = () => markCompleted(item.text);
+        btnContainer.appendChild(inProgBtn);
+        btnContainer.appendChild(compBtn);
+      }
+      const remBtn = document.createElement("button");
+      remBtn.className = "btn add-btn";
+      remBtn.textContent = item.reminder ? "Edit Reminder" : "Set Reminder";
+      remBtn.onclick = () => openReminderModal(item.text);
+      btnContainer.appendChild(remBtn);
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn reset-btn";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = () => removeItem(item.text);
+      btnContainer.appendChild(removeBtn);
+      itemEl.appendChild(textSpan);
+      itemEl.appendChild(btnContainer);
+      return itemEl;
+    }
+    
+    // -----------------------------------------------------------------------
+    // ACTION STATUS FUNCTIONS
+    // -----------------------------------------------------------------------
+    window.markInProgress = function(text) {
+      toDoItems = toDoItems.map(i => i.text === text ? { ...i, status: "In Progress" } : i);
+      renderToDoList();
+      showToast(`"${text}" is now In Progress!`);
+      updateStreakOnAction();
+    };
+    window.markCompleted = function(text) {
+      toDoItems = toDoItems.map(i => i.text === text ? { ...i, status: "Completed" } : i);
+      renderToDoList();
+      showToast(`Congrats! You completed "${text}".`);
+      updateStreakOnAction();
+    };
+    window.removeItem = function(text) {
+      toDoItems = toDoItems.filter(i => i.text !== text);
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+      showToast(`Removed "${text}" from your list.`);
+    };
+    
+    // -----------------------------------------------------------------------
+    // REMINDER MODAL FUNCTIONS
+    // -----------------------------------------------------------------------
+    function openReminderModal(itemText) {
+      currentReminderItem = itemText;
+      reminderInput.value = "";
+      reminderModal.classList.remove("hidden");
+      reminderModal.style.display = "flex";
+    }
+    function closeReminderModal() {
+      reminderModal.classList.add("hidden");
+      reminderModal.style.display = "none";
+    }
+    cancelReminderBtn.addEventListener("click", closeReminderModal);
+    saveReminderBtn.addEventListener("click", () => {
+      const reminder = reminderInput.value;
+      toDoItems = toDoItems.map(i => i.text === currentReminderItem ? { ...i, reminder: reminder } : i);
+      renderToDoList();
+      closeReminderModal();
+      showToast(`Reminder set for "${currentReminderItem}".`);
+    });
+    
+    // -----------------------------------------------------------------------
+    // COUNTDOWN / CHALLENGE FLOW
+    // -----------------------------------------------------------------------
+    function onStartChallenge() {
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      if (selectionMode === "manual" && toDoItems.length < 3) {
+        alert("You must have at least 3 items before starting!");
+        return;
+      }
+      startBtn.style.display = "none";
+      editBtn.classList.remove("hidden");
+      // Activate streak tracking when Start is clicked:
+      localStorage.setItem("arbolStreakActive", "1");
+      // Initialize cycle variables:
+      cycleStartTime = Date.now();
+      actionTaken = false;
+      streakCount = 0;
+      displayStreak();
+      showToast("Streak tracking is now ACTIVE!");
+      logStreakEvent("Streak tracking activated.");
+      streakActivateOverlay.style.display = "flex";
+      setTimeout(() => { streakActivateOverlay.style.display = "none"; }, 1500);
+      const useCountdown = document.getElementById("useCountdown").checked;
+      if (!useCountdown) {
+        countdownTimer.style.display = "block";
+        countdownTimer.textContent = "GAME ON!";
+      } else {
+        if (countdownInterval) clearInterval(countdownInterval);
+        const days = parseInt(document.getElementById("countdownSelect").value);
+        countdownEndTime = Date.now() + days * 24 * 60 * 60 * 1000;
+        countdownTimer.style.display = "block";
+        countdownInterval = setInterval(() => {
+          const now = Date.now();
+          const distance = countdownEndTime - now;
+          if (distance <= 0) {
+            countdownTimer.textContent = "Time's up!";
+            clearInterval(countdownInterval);
+            return;
+          }
+          const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const h = Math.floor((distance / (1000 * 60 * 60)) % 24);
+          const m = Math.floor((distance / (1000 * 60)) % 60);
+          const s = Math.floor((distance / 1000) % 60);
+          countdownTimer.textContent = `Time Left: ${d}d ${h}h ${m}m ${s}s`;
+        }, 1000);
+      }
+    }
+    document.getElementById("editBtn").addEventListener("click", editPlan);
+    function editPlan() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      countdownTimer.textContent = "";
+      countdownTimer.style.display = "none";
+      startBtn.style.display = "inline-block";
+      editBtn.classList.add("hidden");
+      showToast("Plan is now editable.");
+    }
+    function resetPlan() {
+      toDoItems = [];
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      countdownTimer.style.display = "none";
+      countdownTimer.textContent = "";
+      startBtn.style.display = "inline-block";
+      editBtn.classList.add("hidden");
+      supportiveMessageEl.classList.add("hidden");
+      // Fully reset streak and deactivate tracking
+      localStorage.setItem("arbolStreakActive", "0");
+      streakCount = 0;
+      cycleStartTime = 0;
+      actionTaken = false;
+      localStorage.setItem("arbolStreak", "0");
+      localStorage.setItem("arbolLastActionTime", "0");
+      localStorage.setItem("arbolHasStreakFreeze", "1");
+      displayStreak();
+      streakEvents = [];
+      updateStreakLogUI();
+      showToast("All plans reset. Streak is now OFF. Press Start to re-activate.");
+    }
+    
+    function drawChart() {
+      const ctx = balanceChart.getContext('2d');
+      ctx.clearRect(0, 0, balanceChart.width, balanceChart.height);
+      const chartWidth = balanceChart.width;
+      const chartHeight = balanceChart.height;
+      const margin = 60;
+      const target = remainingBalance;
+      const achieved = toDoItems.reduce((sum, rec) => sum + rec.value, 0);
+      const maxValue = Math.max(target, achieved);
+      const chartAreaWidth  = chartWidth - margin * 2;
+      const chartAreaHeight = chartHeight - margin * 2;
+      const scale = chartAreaHeight / maxValue;
+      ctx.beginPath();
+      ctx.moveTo(margin, margin);
+      ctx.lineTo(margin, chartHeight - margin);
+      ctx.lineTo(chartWidth - margin, chartHeight - margin);
+      ctx.strokeStyle = "#fff";
+      ctx.stroke();
+      const steps = 5;
+      ctx.fillStyle = "#fff";
+      ctx.font = "14px Arial";
+      for (let i = 0; i <= steps; i++) {
+        const val = Math.round((i * maxValue) / steps);
+        const y = (chartHeight - margin) - (val / maxValue) * chartAreaHeight;
+        ctx.beginPath();
+        ctx.moveTo(margin - 5, y);
+        ctx.lineTo(margin, y);
+        ctx.stroke();
+        ctx.fillText(`$${val}`, 10, y + 5);
+      }
+      const barWidth = 40;
+      const redX = margin + 50;
+      const greenX = margin + 150;
+      const baselineY = chartHeight - margin;
+      const redBarHeight = target * scale;
+      ctx.fillStyle = "red";
+      ctx.fillRect(redX, baselineY - redBarHeight, barWidth, redBarHeight);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("Target", redX, baselineY - redBarHeight - 15);
+      ctx.fillText(`$${target}`, redX, baselineY - redBarHeight - 30);
+      const greenBarHeight = achieved * scale;
+      ctx.fillStyle = "green";
+      ctx.fillRect(greenX, baselineY - greenBarHeight, barWidth, greenBarHeight);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("Achieved", greenX, baselineY - greenBarHeight - 15);
+      ctx.fillText(`$${achieved}`, greenX, baselineY - greenBarHeight - 30);
+    }
+    
+    priorityFilter.addEventListener("change", renderCarousel);
+    btnLeft.addEventListener("click", scrollLeft);
+    btnRight.addEventListener("click", scrollRight);
+    startBtn.addEventListener("click", onStartChallenge);
+    resetBtn.addEventListener("click", resetPlan);
+    function init() {
+      localStorage.setItem("arbolStreakActive", "0");
+      displayStreak();
+      renderCarousel();
+      drawChart();
+      renderToDoList();
+      checkDailyCheckIn();
+    }
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
