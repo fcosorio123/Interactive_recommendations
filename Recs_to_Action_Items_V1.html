@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Recommendations + Countdown + Chart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .hidden { display: none !important; }
+
+    .ai-questions {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #252525;
+      border-radius: 8px;
+    }
+    .ai-questions label { margin: 0 0.5rem; }
+    
+    .carousel-container {
+      position: relative;
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow: hidden; 
+    }
+    .carousel {
+      display: flex;
+      gap: 1rem;
+      transition: transform 0.35s;
+      padding: 1rem 0;
+      white-space: nowrap;
+    }
+    .card {
+      min-width: 250px;
+      max-width: 300px;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      user-select: none;
+      cursor: default;
+      overflow-wrap: break-word;
+      transition: transform 0.3s ease-in-out;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .card:hover { transform: scale(1.05); }
+    .card p {
+      white-space: normal;
+      word-break: break-word;
+      margin-bottom: 1rem;
+    }
+    .high { background-color: #e74c3c; }
+    .medium { background-color: #f39c12; }
+    .low { background-color: #2ecc71; }
+    .selected {
+      opacity: 0.4;
+      filter: grayscale(1);
+      pointer-events: none;
+    }
+
+    .nav-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(255,255,255,0.2);
+      color: #fff;
+      border-radius: 50%;
+      width: 50px; height: 50px;
+      cursor: pointer;
+      z-index: 10;
+      border: none;
+      font-size: 1.5rem;
+    }
+    .nav-button:hover { background-color: rgba(255,255,255,0.4); }
+    .nav-left { left: 10px; }
+    .nav-right { right: 10px; }
+
+    .selection-mode {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #444;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .selection-mode label { margin-right: 1rem; }
+
+    .todo-list {
+      width: 90%;
+      max-width: 1200px;
+      margin: 1rem auto;
+      background: #252525;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      display: none;
+    }
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #444;
+    }
+    .todo-item:last-child { border-bottom: none; }
+    .completed { text-decoration: line-through; opacity: 0.6; }
+
+    #supportiveMessage {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #8fbc8f;
+      margin-top: 1rem;
+    }
+    
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.3s;
+      margin-left: 5px;
+    }
+    .btn:hover { opacity: 0.9; }
+    .add-btn { background-color: #3498db; }
+    .in-progress-btn { background-color: #9b59b6; }
+    .complete-btn { background-color: #27ae60; }
+    .reset-btn { background-color: #e67e22; }
+    .start-btn {
+      background: #3498db;
+      padding: 10px 15px;
+      margin-top: 10px;
+      display: none;
+    }
+    .start-btn:hover { background: #2980b9; }
+    .edit-btn {
+      background: #9b59b6;
+      padding: 10px 15px;
+      margin-top: 10px;
+      display: none;
+    }
+    .edit-btn:hover { background: #8e44ad; }
+
+    .countdown {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ffcc00;
+      margin-top: 15px;
+      display: none;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+    }
+    .chart-container {
+      margin-top: 20px;
+      text-align: center;
+      position: relative;
+    }
+    #balanceChart {
+      background: #333;
+      border-radius: 8px;
+    }
+    
+    #reminderModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    #reminderModal .modal-content {
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="flex flex-col items-center pt-6">
+    <h1 class="text-3xl font-bold mb-6">AI Recommendations + Countdown + Chart</h1>
+    <div class="flex flex-wrap items-center gap-4 mb-4">
+      <label for="priorityFilter" class="text-xl">Filter by Priority:</label>
+      <select id="priorityFilter" class="bg-gray-800 text-white px-3 py-2 rounded">
+        <option value="all">All</option>
+        <option value="1">High</option>
+        <option value="2">Medium</option>
+        <option value="3">Low</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="carousel-container">
+    <button class="nav-button nav-left" id="btnLeft">❮</button>
+    <div class="carousel" id="carousel"></div>
+    <button class="nav-button nav-right" id="btnRight">❯</button>
+  </div>
+  
+  <div class="selection-mode">
+    <label class="text-xl">Priority Options:</label>
+    <label>
+      <input type="radio" name="selectionMode" value="manual" checked> Manual Selection
+    </label>
+    <label>
+      <input type="radio" name="selectionMode" value="ai"> AI Supported
+    </label>
+  </div>
+  
+  <div id="aiQuestions" class="ai-questions hidden">
+    <p class="text-lg mb-2">Answer the following to help us assemble your Action Items for optimal execution:</p>
+    <label>Are you anxious?
+      <select id="aiAnxious" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="yes">Yes</option>
+        <option value="no" selected>No</option>
+      </select>
+    </label>
+    <label class="ml-4">Are you scared?
+      <select id="aiScared" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="yes">Yes</option>
+        <option value="no" selected>No</option>
+      </select>
+    </label>
+    <label class="ml-4">Motivation (1 low - 5 high):
+      <select id="aiMotivation" class="bg-gray-800 text-white px-2 py-1 rounded">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </label>
+    <br>
+    <button id="getAIRecBtn" class="btn add-btn mt-2">Get AI Recommendations</button>
+  </div>
+  
+  <div class="todo-list" id="todoList">
+    <h2 class="text-2xl font-bold mb-2">Your Selected Action Items</h2>
+    <p id="minActionMsg" class="text-red-500 hidden">For Manual Selection, you must add at least 3 action items before starting.</p>
+    <div id="todoItems"></div>
+    <p id="supportiveMessage" class="hidden"></p>
+    
+    <label for="countdownSelect" class="text-white mt-3 block">Select Duration (days):</label>
+    <select id="countdownSelect" class="bg-gray-800 text-white px-3 py-2 rounded">
+      <option value="7">7</option>
+      <option value="14">14</option>
+      <option value="30">30</option>
+    </select>
+    <label class="text-white mt-2 block">
+      <input type="checkbox" id="useCountdown" checked> Use Countdown Timer
+    </label>
+    
+    <button id="startBtn" class="start-btn btn">Start</button>
+    <button id="editBtn" class="edit-btn btn hidden">Edit Plan</button>
+    <button id="resetBtn" class="reset-btn btn">Reset My Plan</button>
+    <p id="countdownTimer" class="countdown"></p>
+    
+    <div class="chart-container">
+      <canvas id="balanceChart" width="400" height="250"></canvas>
+    </div>
+  </div>
+  
+  <div id="reminderModal" class="hidden">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">Set Reminder</h2>
+      <input id="reminderInput" type="text" class="border p-2 w-full mb-4" placeholder="e.g., daily, SMS">
+      <div class="flex justify-end">
+        <button id="cancelReminderBtn" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded mr-2">Cancel</button>
+        <button id="saveReminderBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    
+    const recommendationsData = [
+      { text: "🔥 Apply for a $2,000 Grant", priority: 1, value: 2000 },
+      { text: "💰 Increase Work Hours ($1,500 Impact)", priority: 1, value: 1500 },
+      { text: "📉 Reduce Dining Plan ($600 Savings)", priority: 2, value: 600 },
+      { text: "🤑 Negotiate Tuition Discount ($800 Savings)", priority: 2, value: 800 },
+      { text: "📌 Cancel Unused Subscriptions ($150 Savings)", priority: 3, value: 150 }
+    ];
+    let remainingBalance = 3000; // Example gap
+    let toDoItems = [];
+    let scrollValue = 0;
+    let countdownEndTime = null;
+    let countdownInterval = null;
+    let currentReminderItem = null;
+    
+    
+    const carousel = document.getElementById("carousel");
+    const btnLeft = document.getElementById("btnLeft");
+    const btnRight = document.getElementById("btnRight");
+    const priorityFilter = document.getElementById("priorityFilter");
+    const todoList = document.getElementById("todoList");
+    const todoItemsContainer = document.getElementById("todoItems");
+    const minActionMsg = document.getElementById("minActionMsg");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const editBtn = document.getElementById("editBtn");
+    const countdownTimer = document.getElementById("countdownTimer");
+    const balanceChart = document.getElementById("balanceChart");
+    const supportiveMessageEl = document.getElementById("supportiveMessage");
+    const reminderModal = document.getElementById("reminderModal");
+    const reminderInput = document.getElementById("reminderInput");
+    const cancelReminderBtn = document.getElementById("cancelReminderBtn");
+    const saveReminderBtn = document.getElementById("saveReminderBtn");
+    
+    
+    document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
+      radio.addEventListener("change", function() {
+        if(this.value === "ai") {
+          document.getElementById("aiQuestions").classList.remove("hidden");
+          supportiveMessageEl.classList.add("hidden");
+        } else {
+          document.getElementById("aiQuestions").classList.add("hidden");
+          supportiveMessageEl.classList.add("hidden");
+        }
+        renderCarousel();
+        renderToDoList();
+      });
+    });
+    
+    document.getElementById("getAIRecBtn").addEventListener("click", getAIRecommendations);
+    
+    function generateSupportiveMessage(anxious, scared, motivation) {
+      let msg = "";
+      if(anxious === "yes" && scared === "yes") {
+        msg += "We know it can feel overwhelming, but every small step counts. ";
+      } else if(anxious === "yes") {
+        msg += "Feeling anxious is normal; taking action shows strength. ";
+      } else if(scared === "yes") {
+        msg += "It’s okay to be scared; taking control is the key to overcoming it. ";
+      } else {
+        msg += "You’re in a great place to take control of your future. ";
+      }
+      if(motivation < 3) {
+        msg += "Even small, steady steps can make a big difference. ";
+      } else {
+        msg += "Your motivation is a powerful tool. Use it to achieve your goals! ";
+      }
+      msg += "We've assembled a tailored list of action items to help you close the gap on your remaining balance.";
+      return msg;
+    }
+    
+    
+    function getAIRecommendations() {
+      const anxious = document.getElementById("aiAnxious").value;
+      const scared = document.getElementById("aiScared").value;
+      const motivation = parseInt(document.getElementById("aiMotivation").value);
+      
+      let candidates = recommendationsData.filter(rec => 
+        !toDoItems.find(item => item.text === rec.text)
+      );
+      
+      if(anxious === "yes") {
+        candidates = candidates.map(rec => {
+          if(rec.text.includes("Negotiate Tuition Discount"))
+            return { ...rec, value: rec.value + 200 };
+          return rec;
+        });
+      }
+      if(scared === "yes") {
+        candidates = candidates.map(rec => {
+          if(rec.text.includes("Cancel Unused Subscriptions"))
+            return { ...rec, value: rec.value + 50 };
+          return rec;
+        });
+      }
+      
+      candidates.sort((a, b) => b.value - a.value);
+      
+      let selected = [];
+      let total = 0;
+      for (let rec of candidates) {
+        if(total < remainingBalance) {
+          selected.push(rec);
+          total += rec.value;
+        }
+      }
+      if(total < remainingBalance) {
+        selected = candidates.slice();
+      }
+      
+      selected.forEach(rec => {
+        if(!toDoItems.find(item => item.text === rec.text)) {
+          toDoItems.push({ text: rec.text, value: rec.value, status: "Not Started" });
+        }
+      });
+      
+      let supportiveMsg = generateSupportiveMessage(anxious, scared, motivation);
+      supportiveMessageEl.textContent = supportiveMsg;
+      supportiveMessageEl.classList.remove("hidden");
+      
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+      
+      document.getElementById("aiQuestions").classList.add("hidden");
+    }
+    
+   
+    function renderCarousel() {
+      carousel.innerHTML = "";
+      scrollValue = 0;
+      carousel.style.transform = `translateX(0px)`;
+      
+      const filtered = recommendationsData.filter(
+        rec => priorityFilter.value === "all" || rec.priority == priorityFilter.value
+      );
+      
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      
+      filtered.forEach(rec => {
+        const isSelected = toDoItems.some(item => item.text === rec.text);
+        const card = document.createElement("div");
+        card.classList.add("card");
+        if(rec.priority === 1) card.classList.add("high");
+        else if(rec.priority === 2) card.classList.add("medium");
+        else card.classList.add("low");
+        
+        if(isSelected) {
+          card.classList.add("selected");
+          card.innerHTML = `<p>${rec.text}</p><p>(Already Added)</p>`;
+        } else {
+          if(selectionMode === "manual") {
+            card.innerHTML = `<p>${rec.text}</p>
+              <button class="btn add-btn" onclick="addToDoList('${rec.text}', ${rec.value})">
+                Add to List
+              </button>`;
+          } else {
+            card.innerHTML = `<p>${rec.text}</p>
+              <p class="text-sm italic">(Manual add disabled in AI mode)</p>`;
+          }
+        }
+        carousel.appendChild(card);
+      });
+    }
+    
+    function scrollLeft() {
+      scrollValue -= 300;
+      if(scrollValue < 0) scrollValue = 0;
+      carousel.style.transform = `translateX(-${scrollValue}px)`;
+    }
+    
+    function scrollRight() {
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+      scrollValue += 300;
+      if(scrollValue > maxScroll) scrollValue = maxScroll;
+      carousel.style.transform = `translateX(-${scrollValue}px)`;
+    }
+    
+   
+    window.addToDoList = function(text, value) {
+      if(!toDoItems.find(item => item.text === text)) {
+        toDoItems.push({ text, value, status: "Not Started" });
+        renderToDoList();
+        renderCarousel();
+        drawChart();
+      }
+    };
+    
+    function renderToDoList() {
+      todoItemsContainer.innerHTML = "";
+      todoList.style.display = toDoItems.length > 0 ? "block" : "none";
+      
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      if(selectionMode === "manual") {
+        if(toDoItems.length < 3) {
+          minActionMsg.classList.remove("hidden");
+          startBtn.style.display = "none";
+        } else {
+          minActionMsg.classList.add("hidden");
+          startBtn.style.display = "inline-block";
+        }
+      } else {
+        minActionMsg.classList.add("hidden");
+        startBtn.style.display = "inline-block";
+      }
+      
+      toDoItems.forEach(item => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "todo-item";
+        
+        const textSpan = document.createElement("span");
+        textSpan.textContent = item.text + ": " + item.status;
+        if(item.status === "Completed") textSpan.classList.add("completed");
+        if(item.reminder) textSpan.textContent += " (Reminder: " + item.reminder + ")";
+        
+        const btnContainer = document.createElement("div");
+        if(item.status !== "Completed") {
+          const inProgBtn = document.createElement("button");
+          inProgBtn.className = "btn in-progress-btn";
+          inProgBtn.textContent = "In Progress";
+          inProgBtn.onclick = () => markInProgress(item.text);
+          
+          const compBtn = document.createElement("button");
+          compBtn.className = "btn complete-btn";
+          compBtn.textContent = "Complete";
+          compBtn.onclick = () => markCompleted(item.text);
+          
+          btnContainer.appendChild(inProgBtn);
+          btnContainer.appendChild(compBtn);
+        }
+        const remBtn = document.createElement("button");
+        remBtn.className = "btn add-btn";
+        remBtn.textContent = item.reminder ? "Edit Reminder" : "Set Reminder";
+        remBtn.onclick = () => openReminderModal(item.text);
+        btnContainer.appendChild(remBtn);
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn reset-btn";
+        removeBtn.textContent = "Remove";
+        removeBtn.onclick = () => removeItem(item.text);
+        btnContainer.appendChild(removeBtn);
+        
+        itemEl.appendChild(textSpan);
+        itemEl.appendChild(btnContainer);
+        todoItemsContainer.appendChild(itemEl);
+      });
+    }
+    
+    window.markInProgress = function(text) {
+      toDoItems = toDoItems.map(i => i.text === text ? { ...i, status: "In Progress" } : i);
+      renderToDoList();
+    };
+    
+    window.markCompleted = function(text) {
+      toDoItems = toDoItems.map(i => i.text === text ? { ...i, status: "Completed" } : i);
+      renderToDoList();
+    };
+    
+    window.removeItem = function(text) {
+      toDoItems = toDoItems.filter(i => i.text !== text);
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+    };
+    
+    
+    function openReminderModal(itemText) {
+      currentReminderItem = itemText;
+      reminderInput.value = ""; // clear previous input
+      
+      reminderModal.classList.remove("hidden");
+      reminderModal.style.display = "flex";
+    }
+    
+    function closeReminderModal() {
+      reminderModal.classList.add("hidden");
+      reminderModal.style.display = "none";
+    }
+    
+    cancelReminderBtn.addEventListener("click", closeReminderModal);
+    saveReminderBtn.addEventListener("click", () => {
+      const reminder = reminderInput.value;
+      toDoItems = toDoItems.map(i => i.text === currentReminderItem ? { ...i, reminder: reminder } : i);
+      renderToDoList();
+      closeReminderModal();
+    });
+    
+    window.setReminder = function(text) {
+      openReminderModal(text);
+    };
+    
+   
+    function onStartChallenge() {
+      const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+      if(selectionMode === "manual" && toDoItems.length < 3) {
+        alert("You must have at least 3 items before starting!");
+        return;
+      }
+      startBtn.style.display = "none";
+      editBtn.classList.remove("hidden");
+      
+      const useCountdown = document.getElementById("useCountdown").checked;
+      if(!useCountdown) {
+        countdownTimer.style.display = "block";
+        countdownTimer.textContent = "GAME ON!";
+      } else {
+        if(countdownInterval) clearInterval(countdownInterval);
+        const days = parseInt(document.getElementById("countdownSelect").value);
+        countdownEndTime = Date.now() + days * 24 * 60 * 60 * 1000;
+        countdownTimer.style.display = "block";
+        countdownInterval = setInterval(() => {
+          const now = Date.now();
+          const distance = countdownEndTime - now;
+          if(distance <= 0) {
+            countdownTimer.textContent = "Time's up!";
+            clearInterval(countdownInterval);
+            return;
+          }
+          const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const h = Math.floor((distance / (1000 * 60 * 60)) % 24);
+          const m = Math.floor((distance / (1000 * 60)) % 60);
+          const s = Math.floor((distance / 1000) % 60);
+          countdownTimer.textContent = `Time Left: ${d}d ${h}h ${m}m ${s}s`;
+        }, 1000);
+      }
+    }
+    
+    document.getElementById("editBtn").addEventListener("click", editPlan);
+    function editPlan() {
+      if(countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      countdownTimer.textContent = "";
+      countdownTimer.style.display = "none";
+      startBtn.style.display = "inline-block";
+      editBtn.classList.add("hidden");
+    }
+    
+    
+    function resetPlan() {
+      toDoItems = [];
+      renderToDoList();
+      renderCarousel();
+      drawChart();
+      if(countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      countdownTimer.style.display = "none";
+      countdownTimer.textContent = "";
+      startBtn.style.display = "inline-block";
+      editBtn.classList.add("hidden");
+      supportiveMessageEl.classList.add("hidden");
+    }
+    
+    function drawChart() {
+      const ctx = balanceChart.getContext('2d');
+      ctx.clearRect(0, 0, balanceChart.width, balanceChart.height);
+      
+      const chartWidth = balanceChart.width;
+      const chartHeight = balanceChart.height;
+      const margin = 60;
+      
+      const target = remainingBalance;
+      const achieved = toDoItems.reduce((sum, rec) => sum + rec.value, 0);
+      
+      const maxValue = Math.max(target, achieved);
+      const chartAreaWidth  = chartWidth - margin * 2;
+      const chartAreaHeight = chartHeight - margin * 2;
+      const scale = chartAreaHeight / maxValue;
+      
+      ctx.beginPath();
+      ctx.moveTo(margin, margin);
+      ctx.lineTo(margin, chartHeight - margin);
+      ctx.lineTo(chartWidth - margin, chartHeight - margin);
+      ctx.strokeStyle = "#fff";
+      ctx.stroke();
+
+      const steps = 5;
+      ctx.fillStyle = "#fff";
+      ctx.font = "14px Arial";
+      for(let i = 0; i <= steps; i++) {
+        const val = Math.round((i * maxValue) / steps);
+        const y = (chartHeight - margin) - (val / maxValue) * chartAreaHeight;
+        ctx.beginPath();
+        ctx.moveTo(margin - 5, y);
+        ctx.lineTo(margin, y);
+        ctx.stroke();
+        ctx.fillText(`$${val}`, 10, y + 5);
+      }
+      
+      const barWidth = 40;
+      const redX = margin + 50;
+      const greenX = margin + 150;
+      const baselineY = chartHeight - margin;
+      
+      const redBarHeight = target * scale;
+      ctx.fillStyle = "red";
+      ctx.fillRect(redX, baselineY - redBarHeight, barWidth, redBarHeight);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("Target", redX, baselineY - redBarHeight - 15);
+      ctx.fillText(`$${target}`, redX, baselineY - redBarHeight - 30);
+      
+      const greenBarHeight = achieved * scale;
+      ctx.fillStyle = "green";
+      ctx.fillRect(greenX, baselineY - greenBarHeight, barWidth, greenBarHeight);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("Achieved", greenX, baselineY - greenBarHeight - 15);
+      ctx.fillText(`$${achieved}`, greenX, baselineY - greenBarHeight - 30);
+    }
+
+    priorityFilter.addEventListener("change", renderCarousel);
+    btnLeft.addEventListener("click", scrollLeft);
+    btnRight.addEventListener("click", scrollRight);
+    startBtn.addEventListener("click", onStartChallenge);
+    resetBtn.addEventListener("click", resetPlan);
+    
+    renderCarousel();
+  </script>
+</body>
+</html>
